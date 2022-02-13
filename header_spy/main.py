@@ -65,12 +65,10 @@ def enumerate_subdomains() -> None:
     """
     global s_domains
 
-    http = urllib3.PoolManager()
-
     while True:
         url = s_domains.get()
         try:
-            response = http.request('GET', url, timeout=3.0)
+            response = make_request(url)
         except urllib3.exceptions.MaxRetryError:
             print(TerminalColours.FAIL + "[-] {}".format(url))
         except urllib3.exceptions.TimeoutError:
