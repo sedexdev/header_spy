@@ -28,7 +28,7 @@ def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--domain", dest="domain", help="Web domain whose headers you want to inspect")
     parser.add_argument("-e", "--enum_sub", action="store_true", help="Enumerate subdomains from this domain")
-    parser.add_argument("-s", "--secure", action="store_true", help="Inspect HTTPS responses")
+    parser.add_argument("-s", "--secure", action="store_true", help="Send requests using HTTPS")
     parser.add_argument(
         "-t",
         "--threads",
@@ -39,8 +39,6 @@ def get_args() -> argparse.Namespace:
     args = parser.parse_args()
     if not args.domain:
         parser.error("\n\n[-] Expected a domain for the HTTP GET request\n")
-    if args.threads and not args.enum_sub:
-        parser.error("\n\n[-] Number of threads is not required if not enumerating subdomains\n")
     return args
 
 
@@ -67,10 +65,12 @@ def enumerate_subdomains() -> None:
     """
     global s_domains
 
+    http = urllib3.PoolManager()
+
     while True:
         url = s_domains.get()
         try:
-            response = make_request(url)
+            response = http.request('GET', url, timeout=3.0)
         except urllib3.exceptions.MaxRetryError:
             print(TerminalColours.FAIL + "[-] {}".format(url))
         except urllib3.exceptions.TimeoutError:
@@ -85,20 +85,19 @@ def enumerate_subdomains() -> None:
         s_domains.task_done()
 
 
-def update_queue(domain: str) -> None:
+def update_queue(domain: str, protocol: str) -> None:
     """
     Populate the deque with urls using words from
     subdomains.txt
 
     Args:
         domain (str): the domain passed in by the user
+        protocol (str): protocol to use for the request
     """
-    s_domains.put("https://{}".format(domain))
     with open(word_list_path, 'r') as file:
         words = file.read().splitlines()
         for word in words:
-            url = "https://{x}.{y}".format(x=word, y=domain)
-            s_domains.put(url)
+            s_domains.put("{x}{y}.{z}".format(x=protocol, y=word, z=domain))
 
 
 def main() -> None:
@@ -108,24 +107,25 @@ def main() -> None:
     global s_domains
 
     args = get_args()
+    protocol = "https://" if args.secure else "http://"
     try:
         print("\n[+] Sending requests and awaiting responses...")
         if args.enum_sub:
-            update_queue(args.domain)
-            for t in range(args.threads):
-                worker = Thread(target=enumerate_subdomains())
-                print(worker)
-                worker.daemon = True
-                worker.start()
-            s_domains.join()
+            update_queue(args.domain, protocol)
+            threads = [Thread(target=enumerate_subdomains) for _ in range(args.threads)]
+            for thread in threads:
+                thread.daemon = True
+                thread.start()
+            for thread in threads:
+                thread.join()
         else:
-            response = make_request(args.domain)
-            print(TerminalColours.OKGREEN + "[+] Received response from https://{}\n".format(args.domain))
+            response = make_request("{x}{y}".format(x=protocol, y=args.domain))
+            print(TerminalColours.OKGREEN + "[+] Received response from {x}{y}\n".format(x=protocol, y=args.domain))
             for header in response.headers:
                 print(TerminalColours.PURPLE + "{x}: {y}".format(x=header, y=response.headers[header]))
             print()
-    except urllib3.exceptions.ConnectionError:
-        print(TerminalColours.FAIL + "[-] http://{}".format(args.domain))
+    except urllib3.exceptions.MaxRetryError:
+        print(TerminalColours.FAIL + "[-] {x}{y}".format(x=protocol, y=args.domain))
         print("\n[-] Request failed. Either the server is unresponsive or the domain is not valid\n")
 
 
