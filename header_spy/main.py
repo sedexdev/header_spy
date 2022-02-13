@@ -39,7 +39,7 @@ def get_args() -> argparse.Namespace:
     args = parser.parse_args()
     if not args.domain:
         parser.error("\n\n[-] Expected a domain for the HTTP GET request\n")
-    if args.threads and not args.subdomains:
+    if args.threads and not args.enum_sub:
         parser.error("\n\n[-] Number of threads is not required if not enumerating subdomains\n")
     return args
 
@@ -114,6 +114,7 @@ def main() -> None:
             update_queue(args.domain)
             for t in range(args.threads):
                 worker = Thread(target=enumerate_subdomains())
+                print(worker)
                 worker.daemon = True
                 worker.start()
             s_domains.join()
