@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Output file
+header_spy/output.txt
+
 # C extensions
 *.so
 
