@@ -31,7 +31,7 @@ from can be found <a href="https://github.com/rbsec/dnscan" target="_blank" rel=
 </br>
 <code>-e, --enum_sub</code>: Enumerate subdomains for the domain passed in using <code>-d</code> 
 </br>
-<code>-n, --num_sub</code>: Number of subdomains to use for when opting to use subdomain enumeration. Options are 
+<code>-n, --num_sub</code>: Number of subdomains to look for when opting to use subdomain enumeration. Options are 
 chosen using integers 100, 1000, or 10000
 </br>
 <code>-s, --secure</code>: Use HTTPS for requests, default behaviour uses HTTP 
