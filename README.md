@@ -14,8 +14,9 @@ Output is sent to <code>stdout</code> by default.
 resend requests to non-responsive domains. This behaviour is normal, all requests will complete after either receiving 
 a response, the request has timed out, or the requested network is unreachable. 
 
-**CREDIT**: Thanks to <a href="https://github.com/rbsec/">rbsec</a> for sharing comprehensive word lists for subdomain
-enumeration. The repo the <code>subdomain-x.txt</code> files came from can be found <a href="https://github.com/rbsec/dnscan">here</a>
+**CREDIT**: Thanks to <a href="https://github.com/rbsec/" target="_blank">rbsec</a> for sharing comprehensive word 
+lists for subdomain enumeration. The repo the <code>subdomain-x.txt</code> files came from can be found 
+<a href="https://github.com/rbsec/dnscan" target="_blank">here</a>
 
 # Options
 
