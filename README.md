@@ -1,8 +1,11 @@
 # HeaderSpy: A tool for checking secure HTTP headers
 
-Makes a request to a domain supplied by the user and then inspects the headers
-in the HTTP response. The tool lists out the headers that are present, and 
-flags up missing headers that improve the security of communication over HTTP.
+Makes a request to a domain supplied by the user and then inspects the headers in the HTTP response. The tool lists out 
+the headers that are present, and flags up missing headers that improve the security of communication over HTTP.
+
+The tool is based on the <a href="https://owasp.org/www-project-secure-headers/">OWASP Secure Headers Project</a>. This
+project **"describes HTTP response headers that your application can use to increase the security of your application"**.
+The tool can inspect a single domain, or it can enumerate a large amount of possible subdomains of a given domain.
 
 # Usage
 
@@ -24,7 +27,7 @@ from can be found <a href="https://github.com/rbsec/dnscan" target="_blank" rel=
 </br>
 <code>-d, --domain</code>: The domain to send a HTTP request to in order to inspect the response headers (**required**)
 </br>
-<code>-t, --threads</code>: The number of threads used to enumerate subdomains</code>
+<code>-t, --threads</code>: The number of threads used to enumerate subdomains. Default is 10</code>
 </br>
 <code>-e, --enum_sub</code>: Enumerate subdomains for the domain passed in using <code>-d</code> 
 </br>
