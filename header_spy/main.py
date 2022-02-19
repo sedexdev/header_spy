@@ -5,10 +5,11 @@ import os
 import urllib.request
 import urllib.error
 
+from collections import defaultdict
 from concurrent.futures import as_completed, ThreadPoolExecutor
 from http.client import HTTPMessage
 from socket import timeout
-from typing import Callable
+from typing import Callable, List
 
 URLS = []
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -16,6 +17,20 @@ OUTPUT_FILE_PATH = "{}/output.txt".format(BASE_DIR)
 WORD_LIST_PATH_100 = "{}/data_files/subdomains-100.txt".format(BASE_DIR)
 WORD_LIST_PATH_1000 = "{}/data_files/subdomains-1000.txt".format(BASE_DIR)
 WORD_LIST_PATH_10000 = "{}/data_files/subdomains-10000.txt".format(BASE_DIR)
+SECURITY_HEADERS = [
+    "Strict-Transport-Security",
+    "X-Frame-Options",
+    "X-Content-Type-Options",
+    "Content-Security-Policy",
+    "X-Permitted-Cross-Domain-Policies",
+    "Referrer-Policy",
+    "Permissions-Policy",
+    "Clear-Site-Data",
+    "Cross-Origin-Embedder-Policy",
+    "Cross-Origin-Opener-Policy",
+    "Cross-Origin-Resource-Policy",
+    "Cache-Control",
+]
 
 
 class TerminalColours:
@@ -55,8 +70,8 @@ def get_args() -> argparse.Namespace:
     if not args.domain:
         parser.error("\n\n[-] Expected a domain for the HTTP GET request\n")
     if args.enum_sub and not args.num_sub:
-        parser.error("\n\n[-] Cannot enumerate subdomains without number to use (use -n switch, see -h for details)\n")
-    if args.num_sub not in [100, 1000, 10000]:
+        parser.error("\n\n[-] Cannot enumerate subdomains without count to use (use -n switch, see -h for details)\n")
+    if args.num_sub and args.num_sub not in [100, 1000, 10000]:
         parser.error("\n\n[-] Subdomain count is invalid. Choose 100, 1000, or 10000\n")
     return args
 
@@ -98,6 +113,31 @@ def update_domains(domain: str, num_sub: int, protocol: str) -> None:
         URLS = ["{x}{y}".format(x=protocol, y=domain)] + URLS
 
 
+def parse_headers(headers: HTTPMessage) -> defaultdict:
+    """
+    Parse the response headers and their values into a
+    dictionary
+    """
+    header_dict = defaultdict()
+    for header in str(headers).split("\n"):
+        delimiter = header.find(":")
+        key = header[:delimiter]
+        value = header[delimiter + 2:]
+        header_dict[key] = value
+    return header_dict
+
+
+def verify_security(headers_dict: defaultdict) -> List:
+    """
+    Check the headers contained in the HTTP response against
+    the list of security headers recommended by the OWASP
+    Secure Headers Project
+    """
+    found_headers = headers_dict.keys()
+    missing_headers = [x for x in SECURITY_HEADERS if x not in found_headers]
+    return missing_headers
+
+
 def write_file(headers: HTTPMessage, subdomain: str) -> None:
     """
     Write the response headers to a file located at
@@ -107,10 +147,18 @@ def write_file(headers: HTTPMessage, subdomain: str) -> None:
         headers (HTTPResponse): response received from GET request
         subdomain (str): url the request was sent to
     """
+    header_dict = parse_headers(headers)
     with open(OUTPUT_FILE_PATH, 'a') as file:
         file.write("[+] Received response from {}\n\n".format(subdomain))
         file.write(str(headers))
         file.write("")
+        secure_headers = verify_security(header_dict)
+        if len(secure_headers):
+            file.write("[-] Response is missing the following security headers:\n")
+            file.write("\n=======================================================\n")
+            for sh in secure_headers:
+                file.write("{}\n".format(sh))
+            file.write("=======================================================\n\n")
 
 
 def write_stdout(headers: HTTPMessage, subdomain: str) -> None:
@@ -121,8 +169,16 @@ def write_stdout(headers: HTTPMessage, subdomain: str) -> None:
         headers (HTTPMessage): response received from GET request
         subdomain (str): url the request was sent to
     """
+    header_dict = parse_headers(headers)
     print(TerminalColours.OKGREEN + "\n[+] Received response from {}\n".format(subdomain))
     print(TerminalColours.PURPLE + str(headers), end="")
+    secure_headers = verify_security(header_dict)
+    if len(secure_headers):
+        print(TerminalColours.YELLOW + "[-] Response is missing the following security headers:\n")
+        print("=======================================================")
+        for sh in secure_headers:
+            print(TerminalColours.YELLOW + sh)
+        print("=======================================================\n")
 
 
 def execute(func: Callable, num_threads: int, output=False) -> None:
@@ -167,7 +223,7 @@ def main() -> None:
             update_domains(args.domain, args.num_sub, protocol)
             if args.output:
                 print("\n[+] Sending requests and awaiting responses...")
-                print("[+] Writing results to output.txt, this may take some time...\n")
+                print("[+] Writing results to output.txt, this may take some time...")
                 execute(make_request, args.threads, True)
             else:
                 print("\n[+] Sending requests and awaiting responses...\n")
