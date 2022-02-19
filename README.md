@@ -6,9 +6,13 @@ flags up missing headers that improve the security of communication over HTTP.
 
 # Usage
 
-<code>python main.py [-h] -d [domain.name] [-s] [-e] [-t] [num_threads] [-o]</code>
+<code>python main.py [-h] -d [domain.name] [-s] [-e] [-n] [num_subdomains] [-t] [num_threads] [-o]</code>
 
 Output is sent to <code>stdout</code> by default.
+
+**NOTE:** The timeout for an HTTP request is set to 30 seconds. The program may appear to hang while it tries to 
+resend requests to non-responsive domains. This behaviour is normal, all requests will complete after either receiving 
+a response, the request has timed out, or the requested network is unreachable. 
 
 # Options
 
@@ -19,6 +23,9 @@ Output is sent to <code>stdout</code> by default.
 <code>-t, --threads</code>: The number of threads used to enumerate subdomains</code>
 </br>
 <code>-e, --enum_sub</code>: Enumerate subdomains for the domain passed in using <code>-d</code> 
+</br>
+<code>-n, --num_sub</code>: Number of subdomains to use for when opting to use subdomain enumeration. Options are 
+chosen using integers 100, 1000, or 10000
 </br>
 <code>-s, --secure</code>: Use HTTPS for requests, default behaviour uses HTTP 
 </br>

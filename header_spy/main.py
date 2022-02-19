@@ -11,8 +11,11 @@ from socket import timeout
 from typing import Callable
 
 URLS = []
-OUTPUT_FILE_PATH = "{}/output.txt".format(os.path.abspath(os.path.dirname(__file__)))
-WORD_LIST_PATH = "{}/subdomains.txt".format(os.path.abspath(os.path.dirname(__file__)))
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+OUTPUT_FILE_PATH = "{}/output.txt".format(BASE_DIR)
+WORD_LIST_PATH_100 = "{}/data_files/subdomains-100.txt".format(BASE_DIR)
+WORD_LIST_PATH_1000 = "{}/data_files/subdomains-1000.txt".format(BASE_DIR)
+WORD_LIST_PATH_10000 = "{}/data_files/subdomains-10000.txt".format(BASE_DIR)
 
 
 class TerminalColours:
@@ -33,6 +36,12 @@ def get_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--domain", dest="domain", help="Web domain whose headers you want to inspect")
     parser.add_argument("-e", "--enum_sub", action="store_true", help="Enumerate subdomains from this domain")
+    parser.add_argument(
+        "-n",
+        "--num_sub",
+        dest="num_sub",
+        help="Number of subdomains to enumerate. Options are 100, 1000, or 10000",
+        type=int)
     parser.add_argument("-s", "--secure", action="store_true", help="Send requests using HTTPS")
     parser.add_argument("-o", "--output", action="store_true", help="Sends the results to a file called hs_output.txt")
     parser.add_argument(
@@ -45,6 +54,10 @@ def get_args() -> argparse.Namespace:
     args = parser.parse_args()
     if not args.domain:
         parser.error("\n\n[-] Expected a domain for the HTTP GET request\n")
+    if args.enum_sub and not args.num_sub:
+        parser.error("\n\n[-] Cannot enumerate subdomains without number to use (use -n switch, see -h for details)\n")
+    if args.num_sub not in [100, 1000, 10000]:
+        parser.error("\n\n[-] Subdomain count is invalid. Choose 100, 1000, or 10000\n")
     return args
 
 
@@ -60,18 +73,26 @@ def make_request(url: str) -> HTTPMessage:
         return conn.info()
 
 
-def update_domains(domain: str, protocol: str) -> None:
+def update_domains(domain: str, num_sub: int, protocol: str) -> None:
     """
     Populate the deque with urls using words from
-    subdomains.txt
+    subdomains-10000.txt
 
     Args:
         domain (str): the domain passed in by the user
+        num_sub (int): subdomain number that identifies the file to use as
+                       a word list for subdomain enumeration
         protocol (str): protocol to use for the request
     """
     global URLS
 
-    with open(WORD_LIST_PATH, 'r') as file:
+    subdomain_files = {
+        100: WORD_LIST_PATH_100,
+        1000: WORD_LIST_PATH_1000,
+        10000: WORD_LIST_PATH_10000,
+    }
+
+    with open(subdomain_files[num_sub], 'r') as file:
         words = file.read().splitlines()
         URLS = ["{x}{y}.{z}".format(x=protocol, y=word, z=domain) for word in words]
         URLS = ["{x}{y}".format(x=protocol, y=domain)] + URLS
@@ -143,7 +164,7 @@ def main() -> None:
     url = "{x}{y}".format(x=protocol, y=args.domain)
     try:
         if args.enum_sub:
-            update_domains(args.domain, protocol)
+            update_domains(args.domain, args.num_sub, protocol)
             if args.output:
                 print("\n[+] Sending requests and awaiting responses...")
                 print("[+] Writing results to output.txt, this may take some time...\n")
