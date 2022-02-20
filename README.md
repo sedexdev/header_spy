@@ -13,6 +13,8 @@ The tool can inspect a single domain, or it can enumerate a large amount of poss
 
 Output is sent to <code>stdout</code> by default.
 
+If output is sent to a file, itis saved in the current working directory as <code>output.txt</code>
+
 **NOTE:** The timeout for an HTTP request is set to 30 seconds. The program may appear to hang while it tries to 
 resend requests to non-responsive domains. This behaviour is normal, all requests will complete after either receiving 
 a response, the request has timed out, or the requested network is unreachable. 
