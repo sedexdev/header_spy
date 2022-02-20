@@ -216,7 +216,31 @@ def write_stdout(headers: HTTPMessage, subdomain: str) -> None:
         print("=======================================================\n")
 
 
-def execute(func: Callable, num_threads: int, header: str, output=False) -> None:
+def handle_output(output: bool, search_header: str, response: HTTPMessage, url: str) -> None:
+    """
+    Processes responses by sending data to the correct
+    output function depending on input provided by the
+    user
+
+    Args:
+        output (bool): write headers to file if True
+        search_header (str): single header to search for in responses
+        response (HTTPMessage): response from HTTP GET request
+        url (str): url to send the HTTP GET request to
+    """
+    if output:
+        if search_header:
+            write_file_uni(response, search_header, url)
+        else:
+            write_file(response, url)
+    else:
+        if search_header:
+            write_stdout_uni(response, search_header, url)
+        else:
+            write_stdout(response, url)
+
+
+def execute(func: Callable, num_threads: int, search_header: str, output=False) -> None:
     """
     Creates a thread pool with <args.threads> number
     of threads for making parallel requests
@@ -224,7 +248,7 @@ def execute(func: Callable, num_threads: int, header: str, output=False) -> None
     Args:
         func (Callable): function for thread to call
         num_threads (int): number of threads in the pool
-        header (str): single header to search for in responses
+        search_header (str): single header to search for in responses
         output (bool): write headers to file if True
     """
     global URLS
@@ -235,22 +259,62 @@ def execute(func: Callable, num_threads: int, header: str, output=False) -> None
             url = future_to_url[future]
             try:
                 response = future.result()
-                if output:
-                    if header:
-                        write_file_uni(response, header, url)
-                    else:
-                        write_file(response, url)
-                else:
-                    if header:
-                        write_stdout_uni(response, header, url)
-                    else:
-                        write_stdout(response, url)
+                handle_output(output, search_header, response, url)
             except timeout as e:
                 if not output:
                     print(TerminalColours.FAIL + "[-] {x}: {y}".format(x=url, y=e))
             except urllib.error.URLError as e:
                 if not output:
                     print(TerminalColours.FAIL + "[-] {x}: {y}".format(x=url, y=e.reason))
+
+
+def handle_enumeration(args: argparse.Namespace, protocol: str) -> None:
+    """
+    Perform all necessary actions when the user has
+    specified that subdomains should be enumerated
+
+    Args:
+        args (argParse.Namespace): command line args from
+                                   the user
+        protocol (str): protocol to use when sending requests
+    """
+    update_domains(args.domain, args.num_sub, protocol)
+    if args.output:
+        print("\n[+] Sending requests and awaiting responses...")
+        print("[+] Writing results to output.txt, this may take some time...")
+        execute(make_request, args.threads, args.uni, True)
+    else:
+        print("\n[+] Sending requests and awaiting responses...\n")
+        execute(make_request, args.threads, args.uni)
+    print(TerminalColours.OKGREEN + "\n[+] Processes complete\n")
+
+
+def handle_single_request(args: argparse.Namespace, url: str) -> None:
+    """
+    Perform all necessary actions when the user has
+    specified that only a single domain should be
+    inspected
+
+    Args:
+        args (argParse.Namespace): command line args from
+                                   the user
+        url (str): url to send the HTTP GET request to
+    """
+    headers = make_request(url)
+    if args.output:
+        if args.uni:
+            print(TerminalColours.OKGREEN + "\n[+] Inspecting responses for header '{}'".format(args.uni))
+            print(TerminalColours.OKGREEN + "[+] Writing results to output file...\n\n")
+            write_file_uni(headers, args.uni, url)
+        else:
+            write_file(headers, url)
+    else:
+        if args.uni:
+            print("\n[+] Inspecting responses for header '{}'\n".format(args.uni))
+            write_stdout_uni(headers, args.uni, url)
+        else:
+            write_stdout(headers, url)
+    print(TerminalColours.OKGREEN + "\n[+] Processes complete\n")
 
 
 def main() -> None:
@@ -262,31 +326,9 @@ def main() -> None:
     url = "{x}{y}".format(x=protocol, y=args.domain)
     try:
         if args.enum_sub:
-            update_domains(args.domain, args.num_sub, protocol)
-            if args.output:
-                print("\n[+] Sending requests and awaiting responses...")
-                print("[+] Writing results to output.txt, this may take some time...")
-                execute(make_request, args.threads, args.uni, True)
-            else:
-                print("\n[+] Sending requests and awaiting responses...\n")
-                execute(make_request, args.threads, args.uni)
-            print(TerminalColours.OKGREEN + "\n[+] Processes complete\n")
+            handle_enumeration(args, protocol)
         else:
-            headers = make_request(url)
-            if args.output:
-                if args.uni:
-                    print(TerminalColours.OKGREEN + "\n[+] Inspecting responses for header '{}'".format(args.uni))
-                    print(TerminalColours.OKGREEN + "[+] Writing results to output file...\n\n")
-                    write_file_uni(headers, args.uni, url)
-                else:
-                    write_file(headers, url)
-            else:
-                if args.uni:
-                    print("\n[+] Inspecting responses for header '{}'\n".format(args.uni))
-                    write_stdout_uni(headers, args.uni, url)
-                else:
-                    write_stdout(headers, url)
-        print(TerminalColours.OKGREEN + "\n[+] Processes complete\n")
+            handle_single_request(args, url)
     except urllib.error.URLError as e:
         print(TerminalColours.FAIL + "[-] {x}: {y}".format(x=url, y=e.reason))
 
