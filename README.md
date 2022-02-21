@@ -1,6 +1,6 @@
 # HeaderSpy: A tool for checking secure HTTP headers
 
-Makes a HTTP GET request to a domain supplied by the user and then inspects the headers in the HTTP response. The tool 
+Makes an HTTP GET request to a domain supplied by the user and then inspects the headers in the HTTP response. The tool 
 lists out the headers that are present, and flags up missing headers that improve the security of communication over HTTP.
 
 The tool is based on the <a href="https://owasp.org/www-project-secure-headers/">OWASP Secure Headers Project</a>. This
@@ -42,6 +42,13 @@ chosen using integers 100, 1000, or 10000
 </br>
 <code>-u, --uni_header</code>: Pass in a single header name to show response URLs that contain that header
 </br>
+
+Sending results to <code>stdout</code> will show failures as well as successes in terms of Web server responses.
+Sending the results to a file will only show successful requests that received responses.
+
+Similarly, sending the result of a single header search to <code>stdout</code> will show both domains that **do** 
+contain the header ([-]) and those that **don't** contain the header ([+]). When sending the results of a single 
+header search to a file, only those domains that don't have the given header are written.
 
 # License
 
