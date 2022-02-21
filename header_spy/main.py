@@ -13,8 +13,9 @@ from socket import timeout
 from typing import Callable, List
 
 URLS = []
-BASE_DIR = os.getcwd()
-OUTPUT_FILE_PATH = "{}/header_data.txt".format(BASE_DIR)
+CURRENT_DIR = os.getcwd()
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+OUTPUT_FILE_PATH = "{}/header_data.txt".format(CURRENT_DIR)
 WORD_LIST_PATH_100 = "{}/data_files/subdomains-100.txt".format(BASE_DIR)
 WORD_LIST_PATH_1000 = "{}/data_files/subdomains-1000.txt".format(BASE_DIR)
 WORD_LIST_PATH_10000 = "{}/data_files/subdomains-10000.txt".format(BASE_DIR)
@@ -298,7 +299,7 @@ def handle_enumeration(args: argparse.Namespace, protocol: str) -> None:
     update_domains(args.domain, args.num_sub, protocol)
     if args.output:
         print("\n[+] Sending requests and awaiting responses...")
-        print("[+] Writing results to header_data.txt, this may take some time...")
+        print("[+] Writing results to header_data.txt, this may take some time...\n")
         execute(make_request, args.threads, args.uni, True)
     else:
         print("\n[+] Sending requests and awaiting responses...\n")
@@ -319,11 +320,13 @@ def handle_single_request(args: argparse.Namespace, url: str) -> None:
     """
     headers = make_request(url)
     if args.output:
+        print("\n[+] Sending requests and awaiting responses...")
         if args.uni:
-            print(TerminalColours.OKGREEN + "\n[+] Inspecting responses for header '{}'".format(args.uni))
-            print(TerminalColours.OKGREEN + "[+] Writing results to output file...\n\n")
+            print(TerminalColours.OKGREEN + "[+] Inspecting responses for header '{}'".format(args.uni))
+            print(TerminalColours.OKGREEN + "[+] Writing results to header_data.txt...\n\n")
             write_file_uni(headers, args.uni, url)
         else:
+            print("[+] Writing results to header_data.txt...\n")
             write_file(headers, url)
     else:
         if args.uni:
@@ -331,7 +334,7 @@ def handle_single_request(args: argparse.Namespace, url: str) -> None:
             write_stdout_uni(headers, args.uni, url)
         else:
             write_stdout(headers, url)
-    print(TerminalColours.OKGREEN + "\n[+] Processes complete\n")
+    print(TerminalColours.OKGREEN + "[+] Processes complete\n")
 
 
 def main() -> None:
