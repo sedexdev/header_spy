@@ -19,6 +19,7 @@ class SecureHeaderData(ABC):
     def get_values(self):
         pass
 
+    @abstractmethod
     def get_vulnerabilities(self):
         pass
 
@@ -179,53 +180,133 @@ class XPermittedCrossDomainPolicies(SecureHeaderData, ABC):
     """
     Holds data about the X-Permitted-Cross-Domain-Policies header
     """
-    pass
+
+    def get_description(self) -> str:
+        return ""
+
+    def get_values(self) -> defaultdict:
+        values = defaultdict()
+        return values
+
+    def get_vulnerabilities(self):
+        vulns = defaultdict()
+        return vulns
 
 
 class ReferrerPolicy(SecureHeaderData, ABC):
     """
     Holds data about the Referrer-Policy header
     """
-    pass
+
+    def get_description(self) -> str:
+        return ""
+
+    def get_values(self) -> defaultdict:
+        values = defaultdict()
+        return values
+
+    def get_vulnerabilities(self):
+        vulns = defaultdict()
+        return vulns
 
 
 class PermissionsPolicy(SecureHeaderData, ABC):
     """
     Holds data about the  Permissions-Policy header
     """
-    pass
+
+    def get_description(self) -> str:
+        return ""
+
+    def get_values(self) -> defaultdict:
+        values = defaultdict()
+        return values
+
+    def get_vulnerabilities(self):
+        vulns = defaultdict()
+        return vulns
 
 
 class ClearSiteData(SecureHeaderData, ABC):
     """
     Holds data about the Clear-Site-Data header
     """
-    pass
+
+    def get_description(self) -> str:
+        return ""
+
+    def get_values(self) -> defaultdict:
+        values = defaultdict()
+        return values
+
+    def get_vulnerabilities(self):
+        vulns = defaultdict()
+        return vulns
 
 
 class CrossOriginEmbedderPolicy(SecureHeaderData, ABC):
     """
     Holds data about the Cross-Origin-Embedder-Policy header
     """
-    pass
+
+    def get_description(self) -> str:
+        return ""
+
+    def get_values(self) -> defaultdict:
+        values = defaultdict()
+        return values
+
+    def get_vulnerabilities(self):
+        vulns = defaultdict()
+        return vulns
 
 
 class CrossOriginOpenerPolicy(SecureHeaderData, ABC):
     """
     Holds data bout the Cross-Origin-Opener-Policy header
     """
-    pass
+
+    def get_description(self) -> str:
+        return ""
+
+    def get_values(self) -> defaultdict:
+        values = defaultdict()
+        return values
+
+    def get_vulnerabilities(self):
+        vulns = defaultdict()
+        return vulns
 
 
 class CrossOriginResourcePolicy(SecureHeaderData, ABC):
     """
     Holds data about the Cross-Origin-Resource-Policy header
     """
-    pass
+
+    def get_description(self) -> str:
+        return ""
+
+    def get_values(self) -> defaultdict:
+        values = defaultdict()
+        return values
+
+    def get_vulnerabilities(self):
+        vulns = defaultdict()
+        return vulns
 
 
 class CacheControl(SecureHeaderData, ABC):
     """
     Holds data about the Cache-Control header
     """
-    pass
+
+    def get_description(self) -> str:
+        return ""
+
+    def get_values(self) -> defaultdict:
+        values = defaultdict()
+        return values
+
+    def get_vulnerabilities(self):
+        vulns = defaultdict()
+        return vulns
