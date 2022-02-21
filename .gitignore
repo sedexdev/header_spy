@@ -4,7 +4,8 @@ __pycache__/
 *$py.class
 
 # Output file
-header_spy/output.txt
+header_data.txt
+header_spy/header_data.txt
 
 # C extensions
 *.so
