@@ -5,6 +5,7 @@ import os
 import urllib.request
 import urllib.error
 
+from secure_headers import *
 from collections import defaultdict
 from concurrent.futures import as_completed, ThreadPoolExecutor
 from http.client import HTTPMessage
@@ -12,11 +13,12 @@ from socket import timeout
 from typing import Callable, List
 
 URLS = []
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-OUTPUT_FILE_PATH = "{}/output.txt".format(BASE_DIR)
+BASE_DIR = os.getcwd()
+OUTPUT_FILE_PATH = "{}/header_data.txt".format(BASE_DIR)
 WORD_LIST_PATH_100 = "{}/data_files/subdomains-100.txt".format(BASE_DIR)
 WORD_LIST_PATH_1000 = "{}/data_files/subdomains-1000.txt".format(BASE_DIR)
 WORD_LIST_PATH_10000 = "{}/data_files/subdomains-10000.txt".format(BASE_DIR)
+
 SECURITY_HEADERS = [
     "Strict-Transport-Security",
     "X-Frame-Options",
@@ -31,6 +33,21 @@ SECURITY_HEADERS = [
     "Cross-Origin-Resource-Policy",
     "Cache-Control",
 ]
+
+SECURITY_HEADER_INSTANCES = {
+    "Strict-Transport-Security": StrictTransportSecurity(),
+    "X-Frame-Options": XFrameOptions(),
+    "X-Content-Type-Options": XContentTypeOptions(),
+    "Content-Security-Policy": ContentSecurityPolicy(),
+    "X-Permitted-Cross-Domain-Policies": XPermittedCrossDomainPolicies(),
+    "Referrer-Policy": ReferrerPolicy(),
+    "Permissions-Policy": PermissionsPolicy(),
+    "Clear-Site-Data": ClearSiteData(),
+    "Cross-Origin-Embedder-Policy": CrossOriginEmbedderPolicy(),
+    "Cross-Origin-Opener-Policy": CrossOriginOpenerPolicy(),
+    "Cross-Origin-Resource-Policy": CrossOriginResourcePolicy(),
+    "Cache-Control": CacheControl()
+}
 
 
 class TerminalColours:
@@ -58,7 +75,7 @@ def get_args() -> argparse.Namespace:
         help="Number of subdomains to enumerate. Options are 100, 1000, or 10000",
         type=int)
     parser.add_argument("-s", "--secure", action="store_true", help="Send requests using HTTPS")
-    parser.add_argument("-o", "--output", action="store_true", help="Sends the results to a file called hs_output.txt")
+    parser.add_argument("-o", "--output", action="store_true", help="Send the results to a file called header_data.txt")
     parser.add_argument("-u", "--uni-header", dest="uni", help="Display which responses contain a specific header")
     parser.add_argument(
         "-t",
@@ -281,7 +298,7 @@ def handle_enumeration(args: argparse.Namespace, protocol: str) -> None:
     update_domains(args.domain, args.num_sub, protocol)
     if args.output:
         print("\n[+] Sending requests and awaiting responses...")
-        print("[+] Writing results to output.txt, this may take some time...")
+        print("[+] Writing results to header_data.txt, this may take some time...")
         execute(make_request, args.threads, args.uni, True)
     else:
         print("\n[+] Sending requests and awaiting responses...\n")
