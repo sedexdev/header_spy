@@ -132,7 +132,8 @@ class ContentSecurityPolicy(SecureHeaderData, ABC):
         Returns a string describing the purpose of this
         security header
         """
-        return "Informs browsers on how content is rendered. Rules are created to fine-tune how content is displayed"
+        return "Informs browsers on how content is rendered. Rules are created to fine-tune where content comes from" \
+               "so resources cannot be loaded from non-compliant locations."
 
     def get_values(self) -> defaultdict:
         """
@@ -140,29 +141,30 @@ class ContentSecurityPolicy(SecureHeaderData, ABC):
         and their meanings
         """
         values = defaultdict()
-        values["base-uri"] = "Blah"
-        values["default-src"] = "Blah"
-        values["script-src"] = "Blah"
-        values["object-src"] = "Blah"
-        values["style-src"] = "Blah"
-        values["img-src"] = "Blah"
-        values["media-src"] = "Blah"
-        values["frame-src"] = "Blah"
-        values["child-src"] = "Blah"
-        values["frame-ancestors"] = "Blah"
-        values["font-src"] = "Blah"
-        values["connect-src"] = "Blah"
-        values["manifest-src"] = "Blah"
-        values["form-action"] = "Blah"
-        values["sandbox"] = "Blah"
-        values["script-nonce"] = "Blah"
-        values["plugin-types"] = "Blah"
-        values["reflected-xss"] = "Blah"
-        values["block-all-mixed-content"] = "Blah"
-        values["upgrade-insecure-requests"] = "Blah"
-        values["referrer"] = "Blah"
-        values["report-uri"] = "Blah"
-        values["report-to"] = "Blah"
+        values["base-uri"] = "Base URI for relative URIs"
+        values["default-src"] = "Default loading policy for any directive that isn't defined elsewhere in the policy"
+        values["script-src"] = "Scripts that the resource can execute"
+        values["object-src"] = "Location the resource can load plugins from"
+        values["style-src"] = "Style sheets the resource can apply when rendering"
+        values["img-src"] = "Location the resource can load images from"
+        values["media-src"] = "Location the resource can load video and audio from"
+        values["frame-src"] = "Location the resource can embed frames from (deprecated, use 'child-rsrc')"
+        values["child-src"] = "Location the resource can embed frames from"
+        values["frame-ancestors"] = "Location the resource can be embedded into a frame from"
+        values["font-src"] = "Location the resource can load fonts from"
+        values["connect-src"] = "URIs the resource can load using script interfaces"
+        values["manifest-src"] = "Location the resource can load manifests from"
+        values["form-action"] = "Which URIs can be used in the 'action' attribute of a HTML form element"
+        values["sandbox"] = "HTML sandbox policy the user agent applies to the resource"
+        values["script-nonce"] = "Only scripts containing a specific nonce on script elements can be executed"
+        values["plugin-types"] = "Limits types of resources that can be embedded, invoked by a set of defined plugins"
+        values["reflected-xss"] = "Instructs user agents to activate/deactivate heuristics used to filter out " \
+                                  "reflected XXS attacks. Equivalent to the effects of the X-XXS-Protection header"
+        values["block-all-mixed-content"] = "Prevents user agent from loading mixed content"
+        values["upgrade-insecure-requests"] = "User agents download insecure HTTP resources over HTTPS"
+        values["referrer"] = "Define information the user agent can send in the 'referrer' header (deprecated)"
+        values["report-uri"] = "URI user agents send policy violation reports to (deprecated, use 'report-to')"
+        values["report-to"] = "Group, defined in the 'Report-To' header, user agents send policy violation reports to"
         return values
 
     def get_vulnerabilities(self) -> defaultdict:
@@ -171,8 +173,8 @@ class ContentSecurityPolicy(SecureHeaderData, ABC):
         due to this header being missing
         """
         vulns = defaultdict()
-        vulns["XXS"] = "Blah"
-        vulns["XS-Injection"] = "Blah"
+        vulns["XXS"] = "Allows scripts from outside sources to be executed on the resource"
+        vulns["XS-Injection"] = "Allows malicious resources to be injected into the resource from the outside"
         return vulns
 
 
