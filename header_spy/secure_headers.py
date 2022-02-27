@@ -184,14 +184,23 @@ class XPermittedCrossDomainPolicies(SecureHeaderData, ABC):
     """
 
     def get_description(self) -> str:
-        return ""
+        return "XML file outlining a policy that gives permissions to Web clients to handle data across domains. " \
+               "Remote domains (your servers) need to host a cross domain policy file that authorises requesting" \
+               "clients to be able to access content on the remote domain"
 
     def get_values(self) -> defaultdict:
         values = defaultdict()
+        values["none"] = "Policy files are not allowed anywhere in the target server"
+        values["master-only"] = "Only the master policy (the one you created) file is allowed"
+        values["by-content-type"] = "Only allow policy files served as Content-Type: text/x-cross-domain-policy"
+        values["by-ftp-filename"] = "Only allow policy files whose name is crossdomain.xml"
+        values["all"] = "All policy files on the target domain are allowed"
         return values
 
     def get_vulnerabilities(self):
         vulns = defaultdict()
+        vulns["Resource Abuse"] = "Malicious policies can try to authorise access to harmful resources from outside " \
+                                  "your domain"
         return vulns
 
 
@@ -201,14 +210,24 @@ class ReferrerPolicy(SecureHeaderData, ABC):
     """
 
     def get_description(self) -> str:
-        return ""
+        return "Governs referrer information to be sent back to requesting clients"
 
     def get_values(self) -> defaultdict:
         values = defaultdict()
+        values["no-referrer"] = "The 'Referrer' header is not sent at all"
+        values["no-referrer-when-downgrade"] = "Default behaviour if no policy provided. Won't send from HTTPS -> HTTP"
+        values["origin"] = "Send the domain origin as the referrer"
+        values["origin-when-cross-origin"] = "Send full URI when request is same-origin, otherwise send domain origin"
+        values["same-origin"] = "Referrer is sent for same-site origins, but not cross-origin requests have no referrer"
+        values["strict-origin"] = "Only send document origin to an equally secure destination HTTPS -> HTTPS"
+        values["strict-origin-when-cross-origin"] = "Send full URI when request is same-origin, otherwise send domain" \
+                                                    "origin to equally secure destination HTTPS -> HTTPS"
+        values["unsafe-url"] = "Send full URI (with no params) when using same-origin or cross-origin requests"
         return values
 
     def get_vulnerabilities(self):
         vulns = defaultdict()
+        vulns["Data Leak"] = "Session data can be leaked in Referrer headers if the correct policy is not applied"
         return vulns
 
 
