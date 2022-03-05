@@ -16,7 +16,7 @@ class SecureHeaderData(ABC):
         pass
 
     @abstractmethod
-    def get_values(self):
+    def get_info(self):
         pass
 
     @abstractmethod
@@ -36,15 +36,11 @@ class StrictTransportSecurity(SecureHeaderData, ABC):
         """
         return "Sending this header tells Web browsers that they can only communicate with the Web server over HTTPS"
 
-    def get_values(self) -> defaultdict:
+    def get_info(self) -> dict:
         """
-        Return the possible values of this security header
-        and their meanings
+        Return the OWASP Website info link for this header
         """
-        values = defaultdict()
-        values["max-age=SECONDS"] = "Time in seconds for the browser to remember that this site is HTTPS only"
-        values["includeSubDomains"] = "Apply the HTTPS only rule to all subdomains as well"
-        return values
+        return {"Information": "https://owasp.org/www-project-secure-headers/#http-strict-transport-security"}
 
     def get_vulnerabilities(self) -> defaultdict:
         """
@@ -69,16 +65,11 @@ class XFrameOptions(SecureHeaderData, ABC):
         """
         return "Guides the browser on whether data in the response can be displayed in a frame"
 
-    def get_values(self) -> defaultdict:
+    def get_info(self) -> dict:
         """
-        Return the possible values of this security header
-        and their meanings
+        Return the OWASP Website info link for this header
         """
-        values = defaultdict()
-        values["deny"] = "Rendering within frames is denied"
-        values["sameorigin"] = "Rendering within frames is allowed if the origin is the same as the Web server"
-        values["allow-from: DOMAIN"] = "Rendering is allowed within frames if the frame came from DOMAIN"
-        return values
+        return {"Information": "https://owasp.org/www-project-secure-headers/#x-frame-options"}
 
     def get_vulnerabilities(self) -> defaultdict:
         """
@@ -103,14 +94,11 @@ class XContentTypeOptions(SecureHeaderData, ABC):
         """
         return "Stops browsers from interpreting files differently to the MIME type in the Content-Type header"
 
-    def get_values(self) -> defaultdict:
+    def get_info(self) -> dict:
         """
-        Return the possible values of this security header
-        and their meanings
+        Return the OWASP Website info link for this header
         """
-        values = defaultdict()
-        values["nosniff"] = "Stops browsers from trying to 'sniff' MIME types without reading the Content-Type header"
-        return values
+        return {"Information": "https://owasp.org/www-project-secure-headers/#x-content-type-options"}
 
     def get_vulnerabilities(self) -> defaultdict:
         """
@@ -135,37 +123,11 @@ class ContentSecurityPolicy(SecureHeaderData, ABC):
         return "Informs browsers on how content is rendered. Rules are created to fine-tune where content comes from" \
                "so resources cannot be loaded from non-compliant locations."
 
-    def get_values(self) -> defaultdict:
+    def get_info(self) -> dict:
         """
-        Return the possible values of this security header
-        and their meanings
+        Return the OWASP Website info link for this header
         """
-        values = defaultdict()
-        values["base-uri"] = "Base URI for relative URIs"
-        values["default-src"] = "Default loading policy for any directive that isn't defined elsewhere in the policy"
-        values["script-src"] = "Scripts that the resource can execute"
-        values["object-src"] = "Location the resource can load plugins from"
-        values["style-src"] = "Style sheets the resource can apply when rendering"
-        values["img-src"] = "Location the resource can load images from"
-        values["media-src"] = "Location the resource can load video and audio from"
-        values["frame-src"] = "Location the resource can embed frames from (deprecated, use 'child-rsrc')"
-        values["child-src"] = "Location the resource can embed frames from"
-        values["frame-ancestors"] = "Location the resource can be embedded into a frame from"
-        values["font-src"] = "Location the resource can load fonts from"
-        values["connect-src"] = "URIs the resource can load using script interfaces"
-        values["manifest-src"] = "Location the resource can load manifests from"
-        values["form-action"] = "Which URIs can be used in the 'action' attribute of a HTML form element"
-        values["sandbox"] = "HTML sandbox policy the user agent applies to the resource"
-        values["script-nonce"] = "Only scripts containing a specific nonce on script elements can be executed"
-        values["plugin-types"] = "Limits types of resources that can be embedded, invoked by a set of defined plugins"
-        values["reflected-xss"] = "Instructs user agents to activate/deactivate heuristics used to filter out " \
-                                  "reflected XXS attacks. Equivalent to the effects of the X-XXS-Protection header"
-        values["block-all-mixed-content"] = "Prevents user agent from loading mixed content"
-        values["upgrade-insecure-requests"] = "User agents download insecure HTTP resources over HTTPS"
-        values["referrer"] = "Define information the user agent can send in the 'referrer' header (deprecated)"
-        values["report-uri"] = "URI user agents send policy violation reports to (deprecated, use 'report-to')"
-        values["report-to"] = "Group, defined in the 'Report-To' header, user agents send policy violation reports to"
-        return values
+        return {"Information": "https://owasp.org/www-project-secure-headers/#content-security-policy"}
 
     def get_vulnerabilities(self) -> defaultdict:
         """
@@ -184,20 +146,25 @@ class XPermittedCrossDomainPolicies(SecureHeaderData, ABC):
     """
 
     def get_description(self) -> str:
+        """
+        Returns a string describing the purpose of this
+        security header
+        """
         return "XML file outlining a policy that gives permissions to Web clients to handle data across domains. " \
                "Remote domains (your servers) need to host a cross domain policy file that authorises requesting" \
                "clients to be able to access content on the remote domain"
 
-    def get_values(self) -> defaultdict:
-        values = defaultdict()
-        values["none"] = "Policy files are not allowed anywhere in the target server"
-        values["master-only"] = "Only the master policy (the one you created) file is allowed"
-        values["by-content-type"] = "Only allow policy files served as Content-Type: text/x-cross-domain-policy"
-        values["by-ftp-filename"] = "Only allow policy files whose name is crossdomain.xml"
-        values["all"] = "All policy files on the target domain are allowed"
-        return values
+    def get_info(self) -> dict:
+        """
+        Return the OWASP Website info link for this header
+        """
+        return {"Information": "https://owasp.org/www-project-secure-headers/#x-permitted-cross-domain-policies"}
 
-    def get_vulnerabilities(self):
+    def get_vulnerabilities(self) -> defaultdict:
+        """
+        Return a dictionary of possible vulnerabilities
+        due to this header being missing
+        """
         vulns = defaultdict()
         vulns["Resource Abuse"] = "Malicious policies can try to authorise access to harmful resources from outside " \
                                   "your domain"
@@ -210,22 +177,23 @@ class ReferrerPolicy(SecureHeaderData, ABC):
     """
 
     def get_description(self) -> str:
+        """
+        Returns a string describing the purpose of this
+        security header
+        """
         return "Governs referrer information to be sent back to requesting clients"
 
-    def get_values(self) -> defaultdict:
-        values = defaultdict()
-        values["no-referrer"] = "The 'Referrer' header is not sent at all"
-        values["no-referrer-when-downgrade"] = "Default behaviour if no policy provided. Won't send from HTTPS -> HTTP"
-        values["origin"] = "Send the domain origin as the referrer"
-        values["origin-when-cross-origin"] = "Send full URI when request is same-origin, otherwise send domain origin"
-        values["same-origin"] = "Referrer is sent for same-site origins, but not cross-origin requests have no referrer"
-        values["strict-origin"] = "Only send document origin to an equally secure destination HTTPS -> HTTPS"
-        values["strict-origin-when-cross-origin"] = "Send full URI when request is same-origin, otherwise send domain" \
-                                                    "origin to equally secure destination HTTPS -> HTTPS"
-        values["unsafe-url"] = "Send full URI (with no params) when using same-origin or cross-origin requests"
-        return values
+    def get_info(self) -> dict:
+        """
+        Return the OWASP Website info link for this header
+        """
+        return {"Information": "https://owasp.org/www-project-secure-headers/#referrer-policy"}
 
-    def get_vulnerabilities(self):
+    def get_vulnerabilities(self) -> defaultdict:
+        """
+        Return a dictionary of possible vulnerabilities
+        due to this header being missing
+        """
         vulns = defaultdict()
         vulns["Data Leak"] = "Session data can be leaked in Referrer headers if the correct policy is not applied"
         return vulns
@@ -237,14 +205,27 @@ class PermissionsPolicy(SecureHeaderData, ABC):
     """
 
     def get_description(self) -> str:
-        return ""
+        """
+        Returns a string describing the purpose of this
+        security header
+        """
+        return "Replaces the existing Feature-Policy header for controlling permissions and powerful features"
 
-    def get_values(self) -> defaultdict:
-        values = defaultdict()
-        return values
+    def get_info(self) -> dict:
+        """
+        Return the OWASP Website info link for this header
+        """
+        return {"Information": "https://owasp.org/www-project-secure-headers/#permissions-policy"}
 
-    def get_vulnerabilities(self):
+    def get_vulnerabilities(self) -> defaultdict:
+        """
+        Return a dictionary of possible vulnerabilities
+        due to this header being missing
+        """
         vulns = defaultdict()
+        vulns["Privacy abuse"] = "Potentially allows unauthorized access or usage of browser/client features by Web " \
+                                 "resources. User privacy can be compromised by allowing browser features to be used " \
+                                 "by Web resources"
         return vulns
 
 
@@ -254,14 +235,27 @@ class ClearSiteData(SecureHeaderData, ABC):
     """
 
     def get_description(self) -> str:
-        return ""
+        """
+        Returns a string describing the purpose of this
+        security header
+        """
+        return "Clears browsing data (cookies, storage, cache) associated with the requesting website"
 
-    def get_values(self) -> defaultdict:
-        values = defaultdict()
-        return values
+    def get_info(self) -> dict:
+        """
+        Return the OWASP Website info link for this header
+        """
+        return {"Information": "https://owasp.org/www-project-secure-headers/#clear-site-data"}
 
-    def get_vulnerabilities(self):
+    def get_vulnerabilities(self) -> defaultdict:
+        """
+        Return a dictionary of possible vulnerabilities
+        due to this header being missing
+        """
         vulns = defaultdict()
+        vulns["Privacy abuse"] = "Locally stored data can be accessed by attackers to compromise a users privacy"
+        vulns["Session hijacking"] = "Locally stored session data could be stolen by an attacker in order to " \
+                                     "authenticate against Wen services as that user"
         return vulns
 
 
@@ -271,14 +265,26 @@ class CrossOriginEmbedderPolicy(SecureHeaderData, ABC):
     """
 
     def get_description(self) -> str:
-        return ""
+        """
+        Returns a string describing the purpose of this
+        security header
+        """
+        return "Prevents a document from loading any cross-origin resources that don’t explicitly grant the " \
+               "document permission"
 
-    def get_values(self) -> defaultdict:
-        values = defaultdict()
-        return values
+    def get_info(self) -> dict:
+        """
+        Return the OWASP Website info link for this header
+        """
+        return {"Information": "https://owasp.org/www-project-secure-headers/#cross-origin-embedder-policy"}
 
-    def get_vulnerabilities(self):
+    def get_vulnerabilities(self) -> defaultdict:
+        """
+        Return a dictionary of possible vulnerabilities
+        due to this header being missing
+        """
         vulns = defaultdict()
+        vulns["XXS"] = "Allows scripts from outside sources to be executed on the resource"
         return vulns
 
 
@@ -288,14 +294,30 @@ class CrossOriginOpenerPolicy(SecureHeaderData, ABC):
     """
 
     def get_description(self) -> str:
-        return ""
+        """
+        Returns a string describing the purpose of this
+        security header
+        """
+        return "Allows you to ensure a top-level document does not share a browsing context group with cross-origin " \
+               "documents. Documents are process-isolated so potential attackers can’t access global objects if they" \
+               "were opening it in a popup"
 
-    def get_values(self) -> defaultdict:
-        values = defaultdict()
-        return values
+    def get_info(self) -> dict:
+        """
+        Return the OWASP Website info link for this header
+        """
+        return {"Information": "https://owasp.org/www-project-secure-headers/#cross-origin-opener-policy"}
 
-    def get_vulnerabilities(self):
+    def get_vulnerabilities(self) -> defaultdict:
+        """
+        Return a dictionary of possible vulnerabilities
+        due to this header being missing
+        """
         vulns = defaultdict()
+        vulns["XS-Leaks"] = "Class of vulnerabilities derived from side-channels built into the web platform. " \
+                            "They take advantage of the web’s core principle of composability, which allows " \
+                            "websites to interact with each other, and abuse legitimate mechanisms 2 to infer " \
+                            "information about the user"
         return vulns
 
 
@@ -305,14 +327,30 @@ class CrossOriginResourcePolicy(SecureHeaderData, ABC):
     """
 
     def get_description(self) -> str:
-        return ""
+        """
+        Returns a string describing the purpose of this
+        security header
+        """
+        return "Allows to define a policy that lets web sites and applications opt in to protection against certain " \
+               "requests from other origins (such as those issued with elements like <script> and <img>)"
 
-    def get_values(self) -> defaultdict:
-        values = defaultdict()
-        return values
+    def get_info(self) -> dict:
+        """
+        Return the OWASP Website info link for this header
+        """
+        return {"Information": "https://owasp.org/www-project-secure-headers/#cross-origin-resource-policy"}
 
-    def get_vulnerabilities(self):
+    def get_vulnerabilities(self) -> defaultdict:
+        """
+        Return a dictionary of possible vulnerabilities
+        due to this header being missing
+        """
         vulns = defaultdict()
+        vulns["Side-channel Attacks"] = "An attack based on information gained from the implementation of a " \
+                                        "computer system, rather than weaknesses in implemented algorithms"
+        vulns["XXSI"] = "A kind of vulnerability which exploits the fact that, when a resource is included using " \
+                        "the script tag, the SOP doesn’t apply, because scripts have to be able to be included " \
+                        "cross-domain. An attacker can thus read everything that was included using the script tag"
         return vulns
 
 
@@ -322,12 +360,25 @@ class CacheControl(SecureHeaderData, ABC):
     """
 
     def get_description(self) -> str:
-        return ""
+        """
+        Returns a string describing the purpose of this
+        security header
+        """
+        return "Holds directives (instructions) for caching in both requests and responses"
 
-    def get_values(self) -> defaultdict:
-        values = defaultdict()
-        return values
+    def get_info(self) -> dict:
+        """
+        Return the OWASP Website info link for this header
+        """
+        return {"Information": "https://owasp.org/www-project-secure-headers/#cache-control"}
 
-    def get_vulnerabilities(self):
+    def get_vulnerabilities(self) -> defaultdict:
+        """
+        Return a dictionary of possible vulnerabilities
+        due to this header being missing
+        """
         vulns = defaultdict()
+        vulns["Privacy abuse"] = "Browsers often store information in a client-side cache, which can leave behind " \
+                                 "sensitive information for other users to find and exploit, such as passwords or " \
+                                 "credit card numbers"
         return vulns
