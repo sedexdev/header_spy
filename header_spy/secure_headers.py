@@ -16,7 +16,7 @@ class SecureHeaderData(ABC):
         pass
 
     @abstractmethod
-    def get_info(self):
+    def get_link(self):
         pass
 
     @abstractmethod
@@ -36,11 +36,11 @@ class StrictTransportSecurity(SecureHeaderData, ABC):
         """
         return "Sending this header tells Web browsers that they can only communicate with the Web server over HTTPS"
 
-    def get_info(self) -> dict:
+    def get_link(self) -> str:
         """
         Return the OWASP Website info link for this header
         """
-        return {"Information": "https://owasp.org/www-project-secure-headers/#http-strict-transport-security"}
+        return "https://owasp.org/www-project-secure-headers/#http-strict-transport-security"
 
     def get_vulnerabilities(self) -> defaultdict:
         """
@@ -65,11 +65,11 @@ class XFrameOptions(SecureHeaderData, ABC):
         """
         return "Guides the browser on whether data in the response can be displayed in a frame"
 
-    def get_info(self) -> dict:
+    def get_link(self) -> str:
         """
         Return the OWASP Website info link for this header
         """
-        return {"Information": "https://owasp.org/www-project-secure-headers/#x-frame-options"}
+        return "https://owasp.org/www-project-secure-headers/#x-frame-options"
 
     def get_vulnerabilities(self) -> defaultdict:
         """
@@ -94,11 +94,11 @@ class XContentTypeOptions(SecureHeaderData, ABC):
         """
         return "Stops browsers from interpreting files differently to the MIME type in the Content-Type header"
 
-    def get_info(self) -> dict:
+    def get_link(self) -> str:
         """
         Return the OWASP Website info link for this header
         """
-        return {"Information": "https://owasp.org/www-project-secure-headers/#x-content-type-options"}
+        return "https://owasp.org/www-project-secure-headers/#x-content-type-options"
 
     def get_vulnerabilities(self) -> defaultdict:
         """
@@ -123,11 +123,11 @@ class ContentSecurityPolicy(SecureHeaderData, ABC):
         return "Informs browsers on how content is rendered. Rules are created to fine-tune where content comes from" \
                "so resources cannot be loaded from non-compliant locations."
 
-    def get_info(self) -> dict:
+    def get_link(self) -> dict:
         """
         Return the OWASP Website info link for this header
         """
-        return {"Information": "https://owasp.org/www-project-secure-headers/#content-security-policy"}
+        return "https://owasp.org/www-project-secure-headers/#content-security-policy"
 
     def get_vulnerabilities(self) -> defaultdict:
         """
@@ -154,11 +154,11 @@ class XPermittedCrossDomainPolicies(SecureHeaderData, ABC):
                "Remote domains (your servers) need to host a cross domain policy file that authorises requesting" \
                "clients to be able to access content on the remote domain"
 
-    def get_info(self) -> dict:
+    def get_link(self) -> str:
         """
         Return the OWASP Website info link for this header
         """
-        return {"Information": "https://owasp.org/www-project-secure-headers/#x-permitted-cross-domain-policies"}
+        return "https://owasp.org/www-project-secure-headers/#x-permitted-cross-domain-policies"
 
     def get_vulnerabilities(self) -> defaultdict:
         """
@@ -183,11 +183,11 @@ class ReferrerPolicy(SecureHeaderData, ABC):
         """
         return "Governs referrer information to be sent back to requesting clients"
 
-    def get_info(self) -> dict:
+    def get_link(self) -> str:
         """
         Return the OWASP Website info link for this header
         """
-        return {"Information": "https://owasp.org/www-project-secure-headers/#referrer-policy"}
+        return "https://owasp.org/www-project-secure-headers/#referrer-policy"
 
     def get_vulnerabilities(self) -> defaultdict:
         """
@@ -211,11 +211,11 @@ class PermissionsPolicy(SecureHeaderData, ABC):
         """
         return "Replaces the existing Feature-Policy header for controlling permissions and powerful features"
 
-    def get_info(self) -> dict:
+    def get_link(self) -> str:
         """
         Return the OWASP Website info link for this header
         """
-        return {"Information": "https://owasp.org/www-project-secure-headers/#permissions-policy"}
+        return "https://owasp.org/www-project-secure-headers/#permissions-policy"
 
     def get_vulnerabilities(self) -> defaultdict:
         """
@@ -241,11 +241,11 @@ class ClearSiteData(SecureHeaderData, ABC):
         """
         return "Clears browsing data (cookies, storage, cache) associated with the requesting website"
 
-    def get_info(self) -> dict:
+    def get_link(self) -> str:
         """
         Return the OWASP Website info link for this header
         """
-        return {"Information": "https://owasp.org/www-project-secure-headers/#clear-site-data"}
+        return "https://owasp.org/www-project-secure-headers/#clear-site-data"
 
     def get_vulnerabilities(self) -> defaultdict:
         """
@@ -272,11 +272,11 @@ class CrossOriginEmbedderPolicy(SecureHeaderData, ABC):
         return "Prevents a document from loading any cross-origin resources that don’t explicitly grant the " \
                "document permission"
 
-    def get_info(self) -> dict:
+    def get_link(self) -> str:
         """
         Return the OWASP Website info link for this header
         """
-        return {"Information": "https://owasp.org/www-project-secure-headers/#cross-origin-embedder-policy"}
+        return "https://owasp.org/www-project-secure-headers/#cross-origin-embedder-policy"
 
     def get_vulnerabilities(self) -> defaultdict:
         """
@@ -302,11 +302,11 @@ class CrossOriginOpenerPolicy(SecureHeaderData, ABC):
                "documents. Documents are process-isolated so potential attackers can’t access global objects if they" \
                "were opening it in a popup"
 
-    def get_info(self) -> dict:
+    def get_link(self) -> str:
         """
         Return the OWASP Website info link for this header
         """
-        return {"Information": "https://owasp.org/www-project-secure-headers/#cross-origin-opener-policy"}
+        return "https://owasp.org/www-project-secure-headers/#cross-origin-opener-policy"
 
     def get_vulnerabilities(self) -> defaultdict:
         """
@@ -334,11 +334,11 @@ class CrossOriginResourcePolicy(SecureHeaderData, ABC):
         return "Allows to define a policy that lets web sites and applications opt in to protection against certain " \
                "requests from other origins (such as those issued with elements like <script> and <img>)"
 
-    def get_info(self) -> dict:
+    def get_link(self) -> str:
         """
         Return the OWASP Website info link for this header
         """
-        return {"Information": "https://owasp.org/www-project-secure-headers/#cross-origin-resource-policy"}
+        return "https://owasp.org/www-project-secure-headers/#cross-origin-resource-policy"
 
     def get_vulnerabilities(self) -> defaultdict:
         """
@@ -366,11 +366,11 @@ class CacheControl(SecureHeaderData, ABC):
         """
         return "Holds directives (instructions) for caching in both requests and responses"
 
-    def get_info(self) -> dict:
+    def get_link(self) -> str:
         """
         Return the OWASP Website info link for this header
         """
-        return {"Information": "https://owasp.org/www-project-secure-headers/#cache-control"}
+        return "https://owasp.org/www-project-secure-headers/#cache-control"
 
     def get_vulnerabilities(self) -> defaultdict:
         """
