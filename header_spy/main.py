@@ -5,62 +5,25 @@ import os
 import urllib.request
 import urllib.error
 
-from secure_headers import *
-from collections import defaultdict
+from colours import TerminalColours
 from concurrent.futures import as_completed, ThreadPoolExecutor
 from http.client import HTTPMessage
 from socket import timeout
-from typing import Callable, List
+from typing import Callable
+
+from output import (
+    uni_file_heading,
+    write_file_uni,
+    write_file,
+    write_stdout_uni,
+    write_stdout
+)
 
 URLS = []
-CURRENT_DIR = os.getcwd()
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-OUTPUT_FILE_PATH = "{}/header_data.txt".format(CURRENT_DIR)
 WORD_LIST_PATH_100 = "{}/data_files/subdomains-100.txt".format(BASE_DIR)
 WORD_LIST_PATH_1000 = "{}/data_files/subdomains-1000.txt".format(BASE_DIR)
 WORD_LIST_PATH_10000 = "{}/data_files/subdomains-10000.txt".format(BASE_DIR)
-
-SECURITY_HEADERS = [
-    "Strict-Transport-Security",
-    "X-Frame-Options",
-    "X-Content-Type-Options",
-    "Content-Security-Policy",
-    "X-Permitted-Cross-Domain-Policies",
-    "Referrer-Policy",
-    "Permissions-Policy",
-    "Clear-Site-Data",
-    "Cross-Origin-Embedder-Policy",
-    "Cross-Origin-Opener-Policy",
-    "Cross-Origin-Resource-Policy",
-    "Cache-Control",
-]
-
-SECURITY_HEADER_INSTANCES = {
-    "Strict-Transport-Security": StrictTransportSecurity(),
-    "X-Frame-Options": XFrameOptions(),
-    "X-Content-Type-Options": XContentTypeOptions(),
-    "Content-Security-Policy": ContentSecurityPolicy(),
-    "X-Permitted-Cross-Domain-Policies": XPermittedCrossDomainPolicies(),
-    "Referrer-Policy": ReferrerPolicy(),
-    "Permissions-Policy": PermissionsPolicy(),
-    "Clear-Site-Data": ClearSiteData(),
-    "Cross-Origin-Embedder-Policy": CrossOriginEmbedderPolicy(),
-    "Cross-Origin-Opener-Policy": CrossOriginOpenerPolicy(),
-    "Cross-Origin-Resource-Policy": CrossOriginResourcePolicy(),
-    "Cache-Control": CacheControl()
-}
-
-
-class TerminalColours:
-    """
-    Colours for displaying success or failure of
-    request on stdout
-    """
-    GREEN = '\033[92m'
-    RED = '\033[91m'
-    PURPLE = '\033[95m'
-    YELLOW = '\033[33m'
-    BLUE = '\033[34m'
 
 
 def get_args() -> argparse.Namespace:
@@ -134,109 +97,7 @@ def update_domains(domain: str, num_sub: int, protocol: str) -> None:
         URLS = ["{x}{y}".format(x=protocol, y=domain)] + URLS
 
 
-def parse_headers(headers: HTTPMessage) -> defaultdict:
-    """
-    Parse the response headers and their values into a
-    dictionary
-    """
-    header_dict = defaultdict()
-    for header in str(headers).split("\n"):
-        delimiter = header.find(":")
-        key = header[:delimiter]
-        value = header[delimiter + 2:]
-        header_dict[key] = value
-    return header_dict
-
-
-def verify_security(headers_dict: defaultdict) -> List:
-    """
-    Check the headers contained in the HTTP response against
-    the list of security headers recommended by the OWASP
-    Secure Headers Project
-    """
-    found_headers = headers_dict.keys()
-    missing_headers = [x for x in SECURITY_HEADERS if x not in found_headers]
-    return missing_headers
-
-
-def write_file_uni(headers: HTTPMessage, header: str, subdomain: str) -> None:
-    """
-    Write the results of an inspection for a single header to
-    an output file
-
-    Args:
-        headers (HTTPResponse): response received from GET request
-        header (str): the header being looked for
-        subdomain (str): url the request was sent to
-    """
-    header_dict = parse_headers(headers)
-    found_headers = header_dict.keys()
-    if header in found_headers:
-        with open(OUTPUT_FILE_PATH, 'a') as file:
-            file.write("{}\n".format(subdomain))
-
-
-def write_file(headers: HTTPMessage, subdomain: str) -> None:
-    """
-    Write the response headers to a file located at
-    OUTPUT_FILE_PATH
-
-    Args:
-        headers (HTTPResponse): response received from GET request
-        subdomain (str): url the request was sent to
-    """
-    header_dict = parse_headers(headers)
-    with open(OUTPUT_FILE_PATH, 'a') as file:
-        file.write("[+] Received response from {}\n\n".format(subdomain))
-        file.write(str(headers))
-        file.write("")
-        secure_headers = verify_security(header_dict)
-        if len(secure_headers):
-            file.write("[-] Response is missing the following security headers:\n")
-            file.write("\n=======================================================\n")
-            for sh in secure_headers:
-                file.write("{}\n".format(sh))
-            file.write("=======================================================\n\n")
-
-
-def write_stdout_uni(headers: HTTPMessage, header: str, subdomain: str) -> None:
-    """
-    Write the results of an inspection for a single header to stdout
-
-    Args:
-        headers (HTTPResponse): response received from GET request
-        header (str): the header being looked for
-        subdomain (str): url the request was sent to
-    """
-    header_dict = parse_headers(headers)
-    found_headers = header_dict.keys()
-    if header in found_headers:
-        print(TerminalColours.GREEN + "[+] {}".format(subdomain))
-    else:
-        print(TerminalColours.RED + "[-] {}".format(subdomain))
-
-
-def write_stdout(headers: HTTPMessage, subdomain: str) -> None:
-    """
-    Write the response headers to stdout
-
-    Args:
-        headers (HTTPMessage): response received from GET request
-        subdomain (str): url the request was sent to
-    """
-    header_dict = parse_headers(headers)
-    print(TerminalColours.GREEN + "\n[+] Received response from {}\n".format(subdomain))
-    print(TerminalColours.PURPLE + str(headers), end="")
-    secure_headers = verify_security(header_dict)
-    if len(secure_headers):
-        print(TerminalColours.YELLOW + "[-] Response is missing the following security headers:\n")
-        print("=======================================================")
-        for sh in secure_headers:
-            print(TerminalColours.YELLOW + sh)
-        print("=======================================================\n")
-
-
-def handle_output(output: bool, search_header: str, response: HTTPMessage, url: str) -> None:
+def handle_output(output: bool, args: argparse.Namespace, response: HTTPMessage, url: str) -> None:
     """
     Processes responses by sending data to the correct
     output function depending on input provided by the
@@ -244,42 +105,41 @@ def handle_output(output: bool, search_header: str, response: HTTPMessage, url: 
 
     Args:
         output (bool): write headers to file if True
-        search_header (str): single header to search for in responses
+        args (argparse.Namespace): arguments provided by the user
         response (HTTPMessage): response from HTTP GET request
         url (str): url to send the HTTP GET request to
     """
     if output:
-        if search_header:
-            write_file_uni(response, search_header, url)
+        if args.uni:
+            write_file_uni(response, args.uni, url)
         else:
-            write_file(response, url)
+            write_file(response, url, args.verbose)
     else:
-        if search_header:
-            write_stdout_uni(response, search_header, url)
+        if args.uni:
+            write_stdout_uni(response, args.uni, url)
         else:
-            write_stdout(response, url)
+            write_stdout(response, url, args.verbose)
 
 
-def execute(func: Callable, num_threads: int, search_header: str, output=False) -> None:
+def execute(func: Callable, args: argparse.Namespace, output=False) -> None:
     """
     Creates a thread pool with <args.threads> number
     of threads for making parallel requests
 
     Args:
         func (Callable): function for thread to call
-        num_threads (int): number of threads in the pool
-        search_header (str): single header to search for in responses
+        args (argparse.Namespace): arguments provided by the user
         output (bool): write headers to file if True
     """
     global URLS
 
-    with ThreadPoolExecutor(max_workers=num_threads) as executor:
+    with ThreadPoolExecutor(max_workers=args.threads) as executor:
         future_to_url = {executor.submit(func, url): url for url in URLS}
         for future in as_completed(future_to_url):
             url = future_to_url[future]
             try:
                 response = future.result()
-                handle_output(output, search_header, response, url)
+                handle_output(output, args, response, url)
             except timeout as e:
                 if not output:
                     print(TerminalColours.RED + "[-] {x}: {y}".format(x=url, y=e))
@@ -288,7 +148,7 @@ def execute(func: Callable, num_threads: int, search_header: str, output=False) 
                     print(TerminalColours.RED + "[-] {x}: {y}".format(x=url, y=e.reason))
 
 
-def handle_enumeration(args: argparse.Namespace, protocol: str) -> None:
+def handle_multiple(args: argparse.Namespace, protocol: str) -> None:
     """
     Perform all necessary actions when the user has
     specified that subdomains should be enumerated
@@ -302,14 +162,16 @@ def handle_enumeration(args: argparse.Namespace, protocol: str) -> None:
     if args.output:
         print("\n[+] Sending requests and awaiting responses...")
         print("[+] Writing results to header_data.txt, this may take some time...\n")
-        execute(make_request, args.threads, args.uni, True)
+        if not args.enum_sub:
+            uni_file_heading(args.uni, args.domain, False)
+        execute(make_request, args, True)
     else:
         print("\n[+] Sending requests and awaiting responses...\n")
-        execute(make_request, args.threads, args.uni)
+        execute(make_request, args)
     print(TerminalColours.GREEN + "\n[+] Processes complete\n")
 
 
-def handle_single_request(args: argparse.Namespace, url: str) -> None:
+def handle_single(args: argparse.Namespace, url: str) -> None:
     """
     Perform all necessary actions when the user has
     specified that only a single domain should be
@@ -325,18 +187,18 @@ def handle_single_request(args: argparse.Namespace, url: str) -> None:
         print("\n[+] Sending requests and awaiting responses...")
         if args.uni:
             print(TerminalColours.GREEN + "[+] Inspecting responses for header '{}'".format(args.uni))
-            print(TerminalColours.GREEN + "[+] Writing results to header_data.txt...\n\n")
-            write_file_uni(headers, args.uni, url)
+            print(TerminalColours.GREEN + "[+] Writing results to header_data.txt...")
+            uni_file_heading(args.uni, url)
         else:
-            print("[+] Writing results to header_data.txt...\n")
-            write_file(headers, url)
+            print("[+] Writing results to header_data.txt...")
+            write_file(headers, url, args.verbose)
     else:
         if args.uni:
             print("\n[+] Inspecting responses for header '{}'\n".format(args.uni))
             write_stdout_uni(headers, args.uni, url)
         else:
-            write_stdout(headers, url)
-    print(TerminalColours.GREEN + "[+] Processes complete\n")
+            write_stdout(headers, url, args.verbose)
+    print(TerminalColours.GREEN + "\n[+] Processes complete\n")
 
 
 def main() -> None:
@@ -348,9 +210,9 @@ def main() -> None:
     url = "{x}{y}".format(x=protocol, y=args.domain)
     try:
         if args.enum_sub:
-            handle_enumeration(args, protocol)
+            handle_multiple(args, protocol)
         else:
-            handle_single_request(args, url)
+            handle_single(args, url)
     except urllib.error.URLError as e:
         print(TerminalColours.RED + "[-] {x}: {y}".format(x=url, y=e.reason))
 

@@ -34,7 +34,7 @@ class StrictTransportSecurity(SecureHeaderData, ABC):
         Returns a string describing the purpose of this
         security header
         """
-        return "Sending this header tells Web browsers that they can only communicate with the Web server over HTTPS"
+        return "Sending this header tells Web browsers that they can only communicate with the \nWeb server over HTTPS"
 
     def get_link(self) -> str:
         """
@@ -48,8 +48,8 @@ class StrictTransportSecurity(SecureHeaderData, ABC):
         due to this header being missing
         """
         vulns = defaultdict()
-        vulns["Downgrade attack"] = "Sending this header over HTTP makes the connection vulnerable to SSL stripping"
-        vulns["Cookie hijacking"] = "Not using encrypted messages increases the chance of session data being stolen"
+        vulns["Downgrade attack"] = "Sending this header over HTTP makes the connection vulnerable to SSL \nstripping"
+        vulns["Cookie hijacking"] = "Not using encrypted messages increases the chance of session data \nbeing stolen"
         return vulns
 
 
@@ -77,7 +77,7 @@ class XFrameOptions(SecureHeaderData, ABC):
         due to this header being missing
         """
         vulns = defaultdict()
-        vulns["Clickjacking"] = "Unseen layers are used to fool a user into clicking on a button or link on an " \
+        vulns["Clickjacking"] = "Unseen layers are used to fool a user into clicking on a button or link on an \n" \
                                 "embedded page when they wanted to click something on the top layer of the page"
         return vulns
 
@@ -92,7 +92,7 @@ class XContentTypeOptions(SecureHeaderData, ABC):
         Returns a string describing the purpose of this
         security header
         """
-        return "Stops browsers from interpreting files differently to the MIME type in the Content-Type header"
+        return "Stops browsers from interpreting files differently to the MIME type in the \nContent-Type header"
 
     def get_link(self) -> str:
         """
@@ -106,7 +106,7 @@ class XContentTypeOptions(SecureHeaderData, ABC):
         due to this header being missing
         """
         vulns = defaultdict()
-        vulns["MIME sniffing"] = "Can cause browsers to interpret files incorrectly e.g text/plain as text/html"
+        vulns["MIME sniffing"] = "Can cause browsers to interpret files incorrectly e.g text/plain \nas text/html"
         return vulns
 
 
@@ -120,10 +120,10 @@ class ContentSecurityPolicy(SecureHeaderData, ABC):
         Returns a string describing the purpose of this
         security header
         """
-        return "Informs browsers on how content is rendered. Rules are created to fine-tune where content comes from" \
-               "so resources cannot be loaded from non-compliant locations."
+        return "Informs browsers on how content is rendered. Rules are created to fine-tune where \ncontent comes " \
+               "from so resources cannot be loaded from non-compliant \nlocations."
 
-    def get_link(self) -> dict:
+    def get_link(self) -> str:
         """
         Return the OWASP Website info link for this header
         """
@@ -136,7 +136,7 @@ class ContentSecurityPolicy(SecureHeaderData, ABC):
         """
         vulns = defaultdict()
         vulns["XXS"] = "Allows scripts from outside sources to be executed on the resource"
-        vulns["XS-Injection"] = "Allows malicious resources to be injected into the resource from the outside"
+        vulns["XS-Injection"] = "Allows malicious resources to be injected into the resource from \nthe outside"
         return vulns
 
 
@@ -150,9 +150,9 @@ class XPermittedCrossDomainPolicies(SecureHeaderData, ABC):
         Returns a string describing the purpose of this
         security header
         """
-        return "XML file outlining a policy that gives permissions to Web clients to handle data across domains. " \
-               "Remote domains (your servers) need to host a cross domain policy file that authorises requesting" \
-               "clients to be able to access content on the remote domain"
+        return "XML file outlining a policy that gives permissions to Web clients to handle data \nacross domains. " \
+               "Remote domains (your servers) need to host a cross domain policy file \nthat authorises requesting " \
+               "clients to be able to access content on the \nremote domain"
 
     def get_link(self) -> str:
         """
@@ -166,8 +166,8 @@ class XPermittedCrossDomainPolicies(SecureHeaderData, ABC):
         due to this header being missing
         """
         vulns = defaultdict()
-        vulns["Resource Abuse"] = "Malicious policies can try to authorise access to harmful resources from outside " \
-                                  "your domain"
+        vulns["Resource Abuse"] = "Malicious policies can try to authorise access to harmful resources \nfrom " \
+                                  "outside your domain"
         return vulns
 
 
@@ -195,7 +195,7 @@ class ReferrerPolicy(SecureHeaderData, ABC):
         due to this header being missing
         """
         vulns = defaultdict()
-        vulns["Data Leak"] = "Session data can be leaked in Referrer headers if the correct policy is not applied"
+        vulns["Data Leak"] = "Session data can be leaked in Referrer headers if the correct policy \nis not applied"
         return vulns
 
 
@@ -209,7 +209,7 @@ class PermissionsPolicy(SecureHeaderData, ABC):
         Returns a string describing the purpose of this
         security header
         """
-        return "Replaces the existing Feature-Policy header for controlling permissions and powerful features"
+        return "Replaces the existing Feature-Policy header for controlling permissions and \npowerful features"
 
     def get_link(self) -> str:
         """
@@ -223,9 +223,9 @@ class PermissionsPolicy(SecureHeaderData, ABC):
         due to this header being missing
         """
         vulns = defaultdict()
-        vulns["Privacy abuse"] = "Potentially allows unauthorized access or usage of browser/client features by Web " \
-                                 "resources. User privacy can be compromised by allowing browser features to be used " \
-                                 "by Web resources"
+        vulns["Privacy abuse"] = "Potentially allows unauthorized access or usage of browser/client features \n" \
+                                 "by Web resources. User privacy can be compromised by allowing browser \nfeatures " \
+                                 "to be used by Web resources"
         return vulns
 
 
@@ -239,7 +239,7 @@ class ClearSiteData(SecureHeaderData, ABC):
         Returns a string describing the purpose of this
         security header
         """
-        return "Clears browsing data (cookies, storage, cache) associated with the requesting website"
+        return "Clears browsing data (cookies, storage, cache) associated with the \nrequesting website"
 
     def get_link(self) -> str:
         """
@@ -253,8 +253,8 @@ class ClearSiteData(SecureHeaderData, ABC):
         due to this header being missing
         """
         vulns = defaultdict()
-        vulns["Privacy abuse"] = "Locally stored data can be accessed by attackers to compromise a users privacy"
-        vulns["Session hijacking"] = "Locally stored session data could be stolen by an attacker in order to " \
+        vulns["Privacy abuse"] = "Locally stored data can be accessed by attackers to compromise a \nusers privacy"
+        vulns["Session hijacking"] = "Locally stored session data could be stolen by an attacker in \norder to " \
                                      "authenticate against Wen services as that user"
         return vulns
 
@@ -269,7 +269,7 @@ class CrossOriginEmbedderPolicy(SecureHeaderData, ABC):
         Returns a string describing the purpose of this
         security header
         """
-        return "Prevents a document from loading any cross-origin resources that don’t explicitly grant the " \
+        return "Prevents a document from loading any cross-origin resources that don’t \nexplicitly grant the " \
                "document permission"
 
     def get_link(self) -> str:
@@ -284,7 +284,7 @@ class CrossOriginEmbedderPolicy(SecureHeaderData, ABC):
         due to this header being missing
         """
         vulns = defaultdict()
-        vulns["XXS"] = "Allows scripts from outside sources to be executed on the resource"
+        vulns["XXS"] = "Allows scripts from outside sources to be executed on \nthe resource"
         return vulns
 
 
@@ -298,9 +298,9 @@ class CrossOriginOpenerPolicy(SecureHeaderData, ABC):
         Returns a string describing the purpose of this
         security header
         """
-        return "Allows you to ensure a top-level document does not share a browsing context group with cross-origin " \
-               "documents. Documents are process-isolated so potential attackers can’t access global objects if they" \
-               "were opening it in a popup"
+        return "Allows you to ensure a top-level document does not share a browsing context \ngroup with " \
+               "cross-origin documents. Documents are process-isolated so potential \nattackers can’t access " \
+               "global objects if they were \nopening it in a popup"
 
     def get_link(self) -> str:
         """
@@ -314,10 +314,10 @@ class CrossOriginOpenerPolicy(SecureHeaderData, ABC):
         due to this header being missing
         """
         vulns = defaultdict()
-        vulns["XS-Leaks"] = "Class of vulnerabilities derived from side-channels built into the web platform. " \
-                            "They take advantage of the web’s core principle of composability, which allows " \
-                            "websites to interact with each other, and abuse legitimate mechanisms 2 to infer " \
-                            "information about the user"
+        vulns["XS-Leaks"] = "Class of vulnerabilities derived from side-channels built into \nthe web platform. " \
+                            "They take advantage of the web’s core principle of \ncomposability, which allows " \
+                            "websites to interact with each other, and \nabuse legitimate mechanisms 2 to infer " \
+                            "information about \nthe user"
         return vulns
 
 
@@ -331,8 +331,8 @@ class CrossOriginResourcePolicy(SecureHeaderData, ABC):
         Returns a string describing the purpose of this
         security header
         """
-        return "Allows to define a policy that lets web sites and applications opt in to protection against certain " \
-               "requests from other origins (such as those issued with elements like <script> and <img>)"
+        return "Allows to define a policy that lets Websites and applications opt in to \nprotection against " \
+               "certain requests from other origins (such as those issued with \nelements like <script> and <img>)"
 
     def get_link(self) -> str:
         """
@@ -346,11 +346,11 @@ class CrossOriginResourcePolicy(SecureHeaderData, ABC):
         due to this header being missing
         """
         vulns = defaultdict()
-        vulns["Side-channel Attacks"] = "An attack based on information gained from the implementation of a " \
-                                        "computer system, rather than weaknesses in implemented algorithms"
-        vulns["XXSI"] = "A kind of vulnerability which exploits the fact that, when a resource is included using " \
-                        "the script tag, the SOP doesn’t apply, because scripts have to be able to be included " \
-                        "cross-domain. An attacker can thus read everything that was included using the script tag"
+        vulns["Side-channel Attacks"] = "An attack based on information gained from the implementation \nof a " \
+                                        "computer system, rather than weaknesses in \nimplemented algorithms"
+        vulns["XXSI"] = "A kind of vulnerability which exploits the fact that, when a resource \nis included using " \
+                        "the script tag, the SOP doesn’t apply, because scripts have to \nbe able to be included " \
+                        "cross-domain. An attacker can thus read everything that \nwas included using the script tag"
         return vulns
 
 
@@ -378,7 +378,7 @@ class CacheControl(SecureHeaderData, ABC):
         due to this header being missing
         """
         vulns = defaultdict()
-        vulns["Privacy abuse"] = "Browsers often store information in a client-side cache, which can leave behind " \
-                                 "sensitive information for other users to find and exploit, such as passwords or " \
+        vulns["Privacy abuse"] = "Browsers often store information in a client-side cache, which can \nleave behind " \
+                                 "sensitive information for other users to find and exploit, \nsuch as passwords or " \
                                  "credit card numbers"
         return vulns
