@@ -168,11 +168,11 @@ def write_file(headers: HTTPMessage, subdomain: str, verbose: bool) -> None:
         verbose (bool): add additional information if True
     """
     header_dict = parse_headers(headers)
+    secure_headers = verify_security(header_dict)
     with open(OUTPUT_FILE_PATH, 'a') as file:
         file.write("[+] Received response from {}\n\n".format(subdomain))
         file.write(str(headers))
         file.write("")
-        secure_headers = verify_security(header_dict)
         if len(secure_headers):
             file.write("[-] Response is missing the following security headers:\n")
             file.write("\n=================================================="
