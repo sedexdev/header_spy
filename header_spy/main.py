@@ -56,10 +56,11 @@ class TerminalColours:
     Colours for displaying success or failure of
     request on stdout
     """
+    GREEN = '\033[92m'
+    RED = '\033[91m'
     PURPLE = '\033[95m'
-    OKGREEN = '\033[92m'
     YELLOW = '\033[33m'
-    FAIL = '\033[91m'
+    BLUE = '\033[34m'
 
 
 def get_args() -> argparse.Namespace:
@@ -85,6 +86,7 @@ def get_args() -> argparse.Namespace:
         help="Number of threads to use to enumerate subdomains. Default is 10",
         default=10,
         type=int)
+    parser.add_argument("-v", "--verbose", action="store_true", help="Outputs additional details")
     args = parser.parse_args()
     if not args.domain:
         parser.error("\n\n[-] Expected a domain for the HTTP GET request\n")
@@ -209,9 +211,9 @@ def write_stdout_uni(headers: HTTPMessage, header: str, subdomain: str) -> None:
     header_dict = parse_headers(headers)
     found_headers = header_dict.keys()
     if header in found_headers:
-        print(TerminalColours.OKGREEN + "[+] {}".format(subdomain))
+        print(TerminalColours.GREEN + "[+] {}".format(subdomain))
     else:
-        print(TerminalColours.FAIL + "[-] {}".format(subdomain))
+        print(TerminalColours.RED + "[-] {}".format(subdomain))
 
 
 def write_stdout(headers: HTTPMessage, subdomain: str) -> None:
@@ -223,7 +225,7 @@ def write_stdout(headers: HTTPMessage, subdomain: str) -> None:
         subdomain (str): url the request was sent to
     """
     header_dict = parse_headers(headers)
-    print(TerminalColours.OKGREEN + "\n[+] Received response from {}\n".format(subdomain))
+    print(TerminalColours.GREEN + "\n[+] Received response from {}\n".format(subdomain))
     print(TerminalColours.PURPLE + str(headers), end="")
     secure_headers = verify_security(header_dict)
     if len(secure_headers):
@@ -280,10 +282,10 @@ def execute(func: Callable, num_threads: int, search_header: str, output=False) 
                 handle_output(output, search_header, response, url)
             except timeout as e:
                 if not output:
-                    print(TerminalColours.FAIL + "[-] {x}: {y}".format(x=url, y=e))
+                    print(TerminalColours.RED + "[-] {x}: {y}".format(x=url, y=e))
             except urllib.error.URLError as e:
                 if not output:
-                    print(TerminalColours.FAIL + "[-] {x}: {y}".format(x=url, y=e.reason))
+                    print(TerminalColours.RED + "[-] {x}: {y}".format(x=url, y=e.reason))
 
 
 def handle_enumeration(args: argparse.Namespace, protocol: str) -> None:
@@ -304,7 +306,7 @@ def handle_enumeration(args: argparse.Namespace, protocol: str) -> None:
     else:
         print("\n[+] Sending requests and awaiting responses...\n")
         execute(make_request, args.threads, args.uni)
-    print(TerminalColours.OKGREEN + "\n[+] Processes complete\n")
+    print(TerminalColours.GREEN + "\n[+] Processes complete\n")
 
 
 def handle_single_request(args: argparse.Namespace, url: str) -> None:
@@ -322,8 +324,8 @@ def handle_single_request(args: argparse.Namespace, url: str) -> None:
     if args.output:
         print("\n[+] Sending requests and awaiting responses...")
         if args.uni:
-            print(TerminalColours.OKGREEN + "[+] Inspecting responses for header '{}'".format(args.uni))
-            print(TerminalColours.OKGREEN + "[+] Writing results to header_data.txt...\n\n")
+            print(TerminalColours.GREEN + "[+] Inspecting responses for header '{}'".format(args.uni))
+            print(TerminalColours.GREEN + "[+] Writing results to header_data.txt...\n\n")
             write_file_uni(headers, args.uni, url)
         else:
             print("[+] Writing results to header_data.txt...\n")
@@ -334,7 +336,7 @@ def handle_single_request(args: argparse.Namespace, url: str) -> None:
             write_stdout_uni(headers, args.uni, url)
         else:
             write_stdout(headers, url)
-    print(TerminalColours.OKGREEN + "[+] Processes complete\n")
+    print(TerminalColours.GREEN + "[+] Processes complete\n")
 
 
 def main() -> None:
@@ -350,7 +352,7 @@ def main() -> None:
         else:
             handle_single_request(args, url)
     except urllib.error.URLError as e:
-        print(TerminalColours.FAIL + "[-] {x}: {y}".format(x=url, y=e.reason))
+        print(TerminalColours.RED + "[-] {x}: {y}".format(x=url, y=e.reason))
 
 
 if __name__ == "__main__":
