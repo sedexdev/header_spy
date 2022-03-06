@@ -42,6 +42,9 @@ chosen using integers 100, 1000, or 10000
 </br>
 <code>-u, --uni_header</code>: Pass in a single header name to show response URLs that contain that header
 </br>
+<code>-v, --verbose</code>: Outputs more data about HTTP headers with a description, a link to the OWASP Website, and
+the vulnerabilities that can result from the header not being present
+</br>
 
 Sending results to <code>stdout</code> will show failures as well as successes in terms of Web server responses.
 Sending the results to a file will only show successful requests that received responses.
