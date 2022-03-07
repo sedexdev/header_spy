@@ -51,10 +51,9 @@ Sending the results to a file will only show successful requests that received r
 
 Similarly, sending the result of a single header search to <code>stdout</code> will show both domains that **do** 
 contain the header ([+]) and those that **don't** contain the header ([-]). When sending the results of a single 
-header search to a file, only those domains that don't have the given header are written.
+header search to a file, only those domains that **don't have the given header are written**.
 
-Verbose content is displayed by default when searching for the presence of a single HTTP header using the 
-<code>-u</code> switch
+No verbose content is displayed when searching for the presence of a single HTTP header using the <code>-u</code> switch
 
 # License
 
