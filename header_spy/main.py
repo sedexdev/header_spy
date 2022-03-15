@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import sys
 import urllib.request
 import urllib.error
 
@@ -26,22 +27,20 @@ WORD_LIST_PATH_1000 = "{}/data_files/subdomains-1000.txt".format(BASE_DIR)
 WORD_LIST_PATH_10000 = "{}/data_files/subdomains-10000.txt".format(BASE_DIR)
 
 
-def get_args() -> argparse.Namespace:
+def add_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     """
-    Gets command line arguments from the user
+    Adds arguments to an instance of argparse.ArgumentParser
+    then returns the generated Namespace object
+
+    Args:
+        parser (argparse.ArgumentParser): argument parsing object
+    Returns:
+        argparse.ArgumentParser: argument parsing object
     """
-    parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--domain", dest="domain", help="Web domain whose headers you want to inspect")
     parser.add_argument("-e", "--enum_sub", action="store_true", help="Enumerate subdomains from this domain")
-    parser.add_argument(
-        "-n",
-        "--num_sub",
-        dest="num_sub",
-        help="Number of subdomains to enumerate. Options are 100, 1000, or 10000",
-        type=int)
-    parser.add_argument("-s", "--secure", action="store_true", help="Send requests using HTTPS")
     parser.add_argument("-o", "--output", action="store_true", help="Send the results to a file called header_data.txt")
-    parser.add_argument("-u", "--uni-header", dest="uni", help="Display which responses contain a specific header")
+    parser.add_argument("-s", "--secure", action="store_true", help="Send requests using HTTPS")
     parser.add_argument(
         "-t",
         "--threads",
@@ -49,15 +48,48 @@ def get_args() -> argparse.Namespace:
         help="Number of threads to use to enumerate subdomains. Default is 10",
         default=10,
         type=int)
+    parser.add_argument("-u", "--uni-header", dest="uni", help="Display which responses contain a specific header")
     parser.add_argument("-v", "--verbose", action="store_true", help="Outputs additional details")
-    args = parser.parse_args()
+    parser.add_argument("-w", "--word-list", dest="word_list", help="Word list path for subdomain enumeration")
+    return parser
+
+
+def verify_args(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
+    """
+    Check Namespace object to verify that the arguments
+    passed in by the user are coherent
+
+    Args:
+        args (argparse.Namespace): terminal arguments from user
+        parser (argparse.ArgumentParser): argument parsing object
+    """
     if not args.domain:
         parser.error("\n\n[-] Expected a domain for the HTTP GET request\n")
-    if args.enum_sub and not args.num_sub:
-        parser.error("\n\n[-] Cannot enumerate subdomains without count to use (use -n switch, see -h for details)\n")
-    if args.num_sub and args.num_sub not in [100, 1000, 10000]:
-        parser.error("\n\n[-] Subdomain count is invalid. Choose 100, 1000, or 10000\n")
+    if args.enum_sub and not args.word_list:
+        parser.error("\n\n[-] Cannot enumerate subdomains without a word list (use -w, see --help for details)\n")
+
+
+def get_args() -> argparse.Namespace:
+    """
+    Gets command line arguments from the user
+    """
+    parser = argparse.ArgumentParser()
+    add_args(parser)
+    args = parser.parse_args()
+    verify_args(args, parser)
     return args
+
+
+def get_source_path(path: str) -> str:
+    """
+    Get the path to the file that is going to be read
+
+    Args:
+        path (str): the file path provided by the user
+    """
+    if os.path.isabs(path):
+        return path
+    return os.path.join(os.getcwd(), path)
 
 
 def make_request(url: str) -> HTTPMessage:
@@ -72,29 +104,26 @@ def make_request(url: str) -> HTTPMessage:
         return conn.info()
 
 
-def update_domains(domain: str, num_sub: int, protocol: str) -> None:
+def update_domains(domain: str, word_list: str, protocol: str) -> None:
     """
     Populate the deque with urls using words from
     subdomains-10000.txt
 
     Args:
         domain (str): the domain passed in by the user
-        num_sub (int): subdomain number that identifies the file to use as
-                       a word list for subdomain enumeration
+        word_list (str): a word list for subdomain enumeration
         protocol (str): protocol to use for the request
     """
     global URLS
 
-    subdomain_files = {
-        100: WORD_LIST_PATH_100,
-        1000: WORD_LIST_PATH_1000,
-        10000: WORD_LIST_PATH_10000,
-    }
-
-    with open(subdomain_files[num_sub], 'r') as file:
-        words = file.read().splitlines()
-        URLS = ["{x}{y}.{z}".format(x=protocol, y=word, z=domain) for word in words]
-        URLS = ["{x}{y}".format(x=protocol, y=domain)] + URLS
+    try:
+        with open(word_list, 'r') as file:
+            words = file.read().splitlines()
+            URLS = ["{x}{y}.{z}".format(x=protocol, y=word, z=domain) for word in words]
+            URLS = ["{x}{y}".format(x=protocol, y=domain)] + URLS
+    except FileNotFoundError:
+        print(f"\n[-] Bad path. Word list not found at {word_list}\n")
+        sys.exit(1)
 
 
 def handle_output(output: bool, args: argparse.Namespace, response: HTTPMessage, url: str) -> None:
@@ -158,7 +187,7 @@ def handle_multiple(args: argparse.Namespace, protocol: str) -> None:
                                    the user
         protocol (str): protocol to use when sending requests
     """
-    update_domains(args.domain, args.num_sub, protocol)
+    update_domains(args.domain, args.word_list, protocol)
     if args.output:
         print("\n[+] Sending requests and awaiting responses...")
         print("[+] Writing results to header_data.txt, this may take some time...\n")
