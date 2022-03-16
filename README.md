@@ -44,6 +44,7 @@ chosen using integers 100, 1000, or 10000
 </br>
 <code>-v, --verbose</code>: Outputs more data about HTTP headers with a description, a link to the OWASP Website, and
 the vulnerabilities that can result from the header not being present
+<code>-w, --word_list</code>: Absolute or relative path to a word list to use for subdomain enumeration
 </br>
 
 Sending results to <code>stdout</code> will show failures as well as successes in terms of Web server responses.
