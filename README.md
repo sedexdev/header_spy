@@ -26,26 +26,24 @@ from can be found <a href="https://github.com/rbsec/dnscan" target="_blank" rel=
 # Options
 
 <code>-d, --domain</code>: The domain to send a HTTP GET request to in order to inspect the response headers (**required**)
-</br>
+<br>
 <code>-e, --enum_sub</code>: Enumerate subdomains for the domain passed in using <code>-d</code> 
-</br>
+<br>
 <code>-h, --help</code>: Show the options
-</br>
-<code>-n, --num_sub</code>: Number of subdomains to look for when opting to use subdomain enumeration. Options are 
-chosen using integers 100, 1000, or 10000
-</br>
+<br>
 <code>-o, --output</code>: Send output to a file rather than stdout
-</br>
+<br>
 <code>-s, --secure</code>: Use HTTPS for requests, default behaviour uses HTTP 
-</br>
+<br>
 <code>-t, --threads</code>: The number of threads used to enumerate subdomains. Default is 10
-</br>
+<br>
 <code>-u, --uni_header</code>: Pass in a single header name to show response URLs that contain that header
-</br>
+<br>
 <code>-v, --verbose</code>: Outputs more data about HTTP headers with a description, a link to the OWASP Website, and
 the vulnerabilities that can result from the header not being present
+<br>
 <code>-w, --word_list</code>: Absolute or relative path to a word list to use for subdomain enumeration
-</br>
+<br>
 
 Sending results to <code>stdout</code> will show failures as well as successes in terms of Web server responses.
 Sending the results to a file will only show successful requests that received responses.
