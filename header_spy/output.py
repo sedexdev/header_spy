@@ -58,6 +58,11 @@ def verify_security(headers_dict: dict) -> List:
     Check the headers contained in the HTTP response against
     the list of security headers recommended by the OWASP
     Secure Headers Project
+
+    Args:
+        headers_dict (dict): dict of header names and descriptions
+    Returns:
+        List: a list of missing OWASP recommended security headers
     """
     found_headers = headers_dict.keys()
     missing_headers = [x for x in SECURITY_HEADERS if x not in found_headers]
@@ -71,10 +76,10 @@ def uni_file_heading(header: str, subdomain: str, single=True) -> None:
     as a result of the specified header not being present
 
     Args:
-        header (str): the header being looked for
-        subdomain (str): url the request was sent to
-        single (bool): states that a single domain is being inspected.
-                       If False, subdomains are also being inspected
+        header (str)    : the header being looked for
+        subdomain (str) : url the request was sent to
+        single (bool)   : states that a single domain is being inspected.
+                          If False, subdomains are also being inspected
     """
     header_obj = SECURITY_HEADER_INSTANCES.get(header, None)
     vulns = header_obj.get_vulnerabilities() if header_obj else None
@@ -146,9 +151,9 @@ def write_file_uni(headers: HTTPMessage, header: str, subdomain: str) -> None:
     an output file if the header is not found in the response
 
     Args:
-        headers (HTTPResponse): response received from GET request
-        header (str): the header being looked for
-        subdomain (str): url the request was sent to
+        headers (HTTPResponse) : response received from GET request
+        header (str)           : the header being looked for
+        subdomain (str)        : url the request was sent to
     """
     header_dict = parse_headers(headers)
     found_headers = header_dict.keys()
@@ -163,9 +168,9 @@ def write_file(headers: HTTPMessage, subdomain: str, verbose: bool) -> None:
     OUTPUT_FILE_PATH
 
     Args:
-        headers (HTTPResponse): response received from GET request
-        subdomain (str): url the request was sent to
-        verbose (bool): add additional information if True
+        headers (HTTPResponse) : response received from GET request
+        subdomain (str)        : url the request was sent to
+        verbose (bool)         : add additional information if True
     """
     header_dict = parse_headers(headers)
     secure_headers = verify_security(header_dict)
@@ -191,9 +196,9 @@ def write_stdout_uni(headers: HTTPMessage, header: str, subdomain: str) -> None:
     to show which responses do not contain the specified header
 
     Args:
-        headers (HTTPResponse): response received from GET request
-        header (str): the header being looked for
-        subdomain (str): url the request was sent to
+        headers (HTTPResponse) : response received from GET request
+        header (str)           : the header being looked for
+        subdomain (str)        : url the request was sent to
     """
     header_dict = parse_headers(headers)
     found_headers = header_dict.keys()
@@ -208,9 +213,9 @@ def write_stdout(headers: HTTPMessage, subdomain: str, verbose: bool) -> None:
     Write the response headers to stdout
 
     Args:
-        headers (HTTPMessage): response received from GET request
-        subdomain (str): url the request was sent to
-        verbose (bool): add additional information if True
+        headers (HTTPMessage) : response received from GET request
+        subdomain (str)       : url the request was sent to
+        verbose (bool)        : add additional information if True
     """
     header_dict = parse_headers(headers)
     print(TerminalColours.GREEN + "\n[+] Received response from {}\n".format(subdomain))

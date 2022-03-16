@@ -10,7 +10,7 @@ from colours import TerminalColours
 from concurrent.futures import as_completed, ThreadPoolExecutor
 from http.client import HTTPMessage
 from socket import timeout
-from typing import Callable
+from typing import Callable, List
 
 from output import (
     uni_file_heading,
@@ -19,12 +19,6 @@ from output import (
     write_stdout_uni,
     write_stdout
 )
-
-URLS = []
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-WORD_LIST_PATH_100 = "{}/data_files/subdomains-100.txt".format(BASE_DIR)
-WORD_LIST_PATH_1000 = "{}/data_files/subdomains-1000.txt".format(BASE_DIR)
-WORD_LIST_PATH_10000 = "{}/data_files/subdomains-10000.txt".format(BASE_DIR)
 
 
 def add_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -60,8 +54,8 @@ def verify_args(args: argparse.Namespace, parser: argparse.ArgumentParser) -> No
     passed in by the user are coherent
 
     Args:
-        args (argparse.Namespace): terminal arguments from user
-        parser (argparse.ArgumentParser): argument parsing object
+        args (argparse.Namespace)        : terminal arguments from user
+        parser (argparse.ArgumentParser) : argument parsing object
     """
     if not args.domain:
         parser.error("\n\n[-] Expected a domain for the HTTP GET request\n")
@@ -72,6 +66,9 @@ def verify_args(args: argparse.Namespace, parser: argparse.ArgumentParser) -> No
 def get_args() -> argparse.Namespace:
     """
     Gets command line arguments from the user
+
+    Returns:
+        argparse.Namespace: terminal arguments from user
     """
     parser = argparse.ArgumentParser()
     add_args(parser)
@@ -82,10 +79,13 @@ def get_args() -> argparse.Namespace:
 
 def get_source_path(path: str) -> str:
     """
-    Get the path to the file that is going to be read
+    Get the path to the word list file that is going to be
+    used for subdomain enumeration
 
     Args:
         path (str): the file path provided by the user
+    Returns:
+        str: full path the supplied word list
     """
     if os.path.isabs(path):
         return path
@@ -99,28 +99,31 @@ def make_request(url: str) -> HTTPMessage:
 
     Args:
         url (str): url to send GET request to
+    Returns:
+        HTTPMessage: http response object
     """
     with urllib.request.urlopen(url, timeout=30) as conn:
         return conn.info()
 
 
-def update_domains(domain: str, word_list: str, protocol: str) -> None:
+def update_domains(domain: str, word_list: str, protocol: str) -> List:
     """
     Populate the deque with urls using words from
     subdomains-10000.txt
 
     Args:
-        domain (str): the domain passed in by the user
-        word_list (str): a word list for subdomain enumeration
-        protocol (str): protocol to use for the request
+        domain (str)    : the domain passed in by the user
+        word_list (str) : a word list for subdomain enumeration
+        protocol (str)  : protocol to use for the request
+    Returns:
+        List: list of subdomains
     """
-    global URLS
-
     try:
         with open(word_list, 'r') as file:
             words = file.read().splitlines()
-            URLS = ["{x}{y}.{z}".format(x=protocol, y=word, z=domain) for word in words]
-            URLS = ["{x}{y}".format(x=protocol, y=domain)] + URLS
+            sub_d = ["{x}{y}.{z}".format(x=protocol, y=word, z=domain) for word in words]
+            sub_d = ["{x}{y}".format(x=protocol, y=domain)] + sub_d
+            return sub_d
     except FileNotFoundError:
         print(f"\n[-] Bad path. Word list not found at {word_list}\n")
         sys.exit(1)
@@ -133,10 +136,10 @@ def handle_output(output: bool, args: argparse.Namespace, response: HTTPMessage,
     user
 
     Args:
-        output (bool): write headers to file if True
-        args (argparse.Namespace): arguments provided by the user
-        response (HTTPMessage): response from HTTP GET request
-        url (str): url to send the HTTP GET request to
+        output (bool)             : write headers to file if True
+        args (argparse.Namespace) : arguments provided by the user
+        response (HTTPMessage)    : response from HTTP GET request
+        url (str)                 : url to send the HTTP GET request to
     """
     if output:
         if args.uni:
@@ -150,20 +153,19 @@ def handle_output(output: bool, args: argparse.Namespace, response: HTTPMessage,
             write_stdout(response, url, args.verbose)
 
 
-def execute(func: Callable, args: argparse.Namespace, output=False) -> None:
+def execute(func: Callable, args: argparse.Namespace, sub_d: List, output=False) -> None:
     """
     Creates a thread pool with <args.threads> number
     of threads for making parallel requests
 
     Args:
-        func (Callable): function for thread to call
-        args (argparse.Namespace): arguments provided by the user
-        output (bool): write headers to file if True
+        func (Callable)           : function for thread to call
+        args (argparse.Namespace) : arguments provided by the user
+        sub_d (List)              : list of subdomains
+        output (bool)             : write headers to file if True
     """
-    global URLS
-
     with ThreadPoolExecutor(max_workers=args.threads) as executor:
-        future_to_url = {executor.submit(func, url): url for url in URLS}
+        future_to_url = {executor.submit(func, s): s for s in sub_d}
         for future in as_completed(future_to_url):
             url = future_to_url[future]
             try:
@@ -183,20 +185,19 @@ def handle_multiple(args: argparse.Namespace, protocol: str) -> None:
     specified that subdomains should be enumerated
 
     Args:
-        args (argParse.Namespace): command line args from
-                                   the user
-        protocol (str): protocol to use when sending requests
+        args (argParse.Namespace) : command line args from the user
+        protocol (str)            : protocol to use when sending requests
     """
-    update_domains(args.domain, args.word_list, protocol)
+    sub_d = update_domains(args.domain, args.word_list, protocol)
     if args.output:
         print("\n[+] Sending requests and awaiting responses...")
         print("[+] Writing results to header_data.txt, this may take some time...\n")
         if not args.enum_sub:
             uni_file_heading(args.uni, args.domain, False)
-        execute(make_request, args, True)
+        execute(make_request, args, sub_d, True)
     else:
         print("\n[+] Sending requests and awaiting responses...\n")
-        execute(make_request, args)
+        execute(make_request, args, sub_d)
     print(TerminalColours.GREEN + "\n[+] Processes complete\n")
 
 
@@ -207,9 +208,8 @@ def handle_single(args: argparse.Namespace, url: str) -> None:
     inspected
 
     Args:
-        args (argParse.Namespace): command line args from
-                                   the user
-        url (str): url to send the HTTP GET request to
+        args (argParse.Namespace) : command line args from the user
+        url (str)                 : url to send the HTTP GET request to
     """
     headers = make_request(url)
     if args.output:
