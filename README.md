@@ -9,7 +9,7 @@ The tool can inspect a single domain, or it can enumerate a large amount of poss
 
 # Usage
 
-<code>python main.py [-h] -d [domain.name] [-s] [-u] [header_name] [-e] [-n] [num_subdomains] [-t] [num_threads] [-o]</code>
+<code>python main.py [-h] -d [domain.name] [-s] [-u] [header_name] [-e] [-w] [word_list_path] [-t] [num_threads] [-o] [-v]</code>
 
 Output is sent to <code>stdout</code> by default.
 
