@@ -7,6 +7,9 @@ __pycache__/
 header_data.txt
 header_spy/header_data.txt
 
+# Non-required files
+data_files/
+
 # C extensions
 *.so
 
