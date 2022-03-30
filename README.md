@@ -27,7 +27,7 @@ from can be found <a href="https://github.com/rbsec/dnscan" target="_blank" rel=
 
 <code>-d, --domain</code>: The domain to send a HTTP GET request to in order to inspect the response headers (**required**)
 <br>
-<code>-e, --enum_sub</code>: Enumerate subdomains for the domain passed in using <code>-d</code> 
+<code>-e, --enum-sub</code>: Enumerate subdomains for the domain passed in using <code>-d</code> 
 <br>
 <code>-h, --help</code>: Show the options
 <br>
@@ -37,12 +37,12 @@ from can be found <a href="https://github.com/rbsec/dnscan" target="_blank" rel=
 <br>
 <code>-t, --threads</code>: The number of threads used to enumerate subdomains. Default is 10
 <br>
-<code>-u, --uni_header</code>: Pass in a single header name to show response URLs that contain that header
+<code>-u, --uni-header</code>: Pass in a single header name to show response URLs that contain that header
 <br>
 <code>-v, --verbose</code>: Outputs more data about HTTP headers with a description, a link to the OWASP Website, and
 the vulnerabilities that can result from the header not being present
 <br>
-<code>-w, --word_list</code>: Absolute or relative path to a word list to use for subdomain enumeration
+<code>-w, --wordlist</code>: Absolute or relative path to a word list to use for subdomain enumeration
 <br>
 
 Sending results to <code>stdout</code> will show failures as well as successes in terms of Web server responses.
