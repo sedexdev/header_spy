@@ -31,7 +31,7 @@ from can be found <a href="https://github.com/rbsec/dnscan" target="_blank" rel=
 <br>
 <code>-h, --help</code>: Show the options
 <br>
-<code>-o, --output</code>: Send output to a file rather than stdout
+<code>-o, --output</code>: File path to save the response data to
 <br>
 <code>-s, --secure</code>: Use HTTPS for requests, default behaviour uses HTTP 
 <br>
