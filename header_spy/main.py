@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import pwd
 import sys
 import urllib.request
 import urllib.error
@@ -33,7 +34,7 @@ def add_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     """
     parser.add_argument("-d", "--domain", dest="domain", help="Web domain whose headers you want to inspect")
     parser.add_argument("-e", "--enum_sub", action="store_true", help="Enumerate subdomains from this domain")
-    parser.add_argument("-o", "--output", action="store_true", help="Send the results to a file called header_data.txt")
+    parser.add_argument("-o", "--output", dest="output", help="Path of save location for output file")
     parser.add_argument("-s", "--secure", action="store_true", help="Send requests using HTTPS")
     parser.add_argument(
         "-t",
@@ -61,6 +62,8 @@ def verify_args(args: argparse.Namespace, parser: argparse.ArgumentParser) -> No
         parser.error("\n\n[-] Expected a domain for the HTTP GET request\n")
     if args.enum_sub and not args.word_list:
         parser.error("\n\n[-] Cannot enumerate subdomains without a word list (use -w, see --help for details)\n")
+    if os.path.isdir(args.output):
+        parser.error(f"\n\n[-] Cannot write over directory '{args.output}', provide a filename for output file\n")
 
 
 def get_args() -> argparse.Namespace:
@@ -143,9 +146,9 @@ def handle_output(output: bool, args: argparse.Namespace, response: HTTPMessage,
     """
     if output:
         if args.uni:
-            write_file_uni(response, args.uni, url)
+            write_file_uni(response, args.uni, url, args.output)
         else:
-            write_file(response, url, args.verbose)
+            write_file(response, url, args.verbose, args.output)
     else:
         if args.uni:
             write_stdout_uni(response, args.uni, url)
@@ -191,9 +194,9 @@ def handle_multiple(args: argparse.Namespace, protocol: str) -> None:
     sub_d = update_domains(args.domain, args.word_list, protocol)
     if args.output:
         print("\n[+] Sending requests and awaiting responses...")
-        print("[+] Writing results to header_data.txt, this may take some time...\n")
+        print(f"[+] Writing results to {args.output}, this may take some time...\n")
         if not args.enum_sub:
-            uni_file_heading(args.uni, args.domain, False)
+            uni_file_heading(args.uni, args.domain, args.output, False)
         execute(make_request, args, sub_d, True)
     else:
         print("\n[+] Sending requests and awaiting responses...\n")
@@ -216,11 +219,11 @@ def handle_single(args: argparse.Namespace, url: str) -> None:
         print("\n[+] Sending requests and awaiting responses...")
         if args.uni:
             print(TerminalColours.GREEN + "[+] Inspecting responses for header '{}'".format(args.uni))
-            print(TerminalColours.GREEN + "[+] Writing results to header_data.txt...")
-            uni_file_heading(args.uni, url)
+            print(TerminalColours.GREEN + f"[+] Writing results to {args.output}...")
+            uni_file_heading(args.uni, url, args.output)
         else:
-            print("[+] Writing results to header_data.txt...")
-            write_file(headers, url, args.verbose)
+            print(f"[+] Writing results to {args.output}...")
+            write_file(headers, url, args.verbose, args.output)
     else:
         if args.uni:
             print("\n[+] Inspecting responses for header '{}'\n".format(args.uni))
