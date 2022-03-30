@@ -33,7 +33,7 @@ def add_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         argparse.ArgumentParser: argument parsing object
     """
     parser.add_argument("-d", "--domain", dest="domain", help="Web domain whose headers you want to inspect")
-    parser.add_argument("-e", "--enum_sub", action="store_true", help="Enumerate subdomains from this domain")
+    parser.add_argument("-e", "--enum-sub", action="store_true", help="Enumerate subdomains from this domain")
     parser.add_argument("-o", "--output", dest="output", help="Path of save location for output file")
     parser.add_argument("-s", "--secure", action="store_true", help="Send requests using HTTPS")
     parser.add_argument(
@@ -45,7 +45,7 @@ def add_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         type=int)
     parser.add_argument("-u", "--uni-header", dest="uni", help="Display which responses contain a specific header")
     parser.add_argument("-v", "--verbose", action="store_true", help="Outputs additional details")
-    parser.add_argument("-w", "--word-list", dest="word_list", help="Word list path for subdomain enumeration")
+    parser.add_argument("-w", "--wordlist", dest="word_list", help="Word list path for subdomain enumeration")
     return parser
 
 
