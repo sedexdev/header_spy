@@ -2,7 +2,6 @@
 
 import argparse
 import os
-import pwd
 import sys
 import urllib.request
 import urllib.error
