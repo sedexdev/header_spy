@@ -62,8 +62,9 @@ def verify_args(args: argparse.Namespace, parser: argparse.ArgumentParser) -> No
         parser.error("\n\n[-] Expected a domain for the HTTP GET request\n")
     if args.enum_sub and not args.word_list:
         parser.error("\n\n[-] Cannot enumerate subdomains without a word list (use -w, see --help for details)\n")
-    if os.path.isdir(args.output):
-        parser.error(f"\n\n[-] Cannot write over directory '{args.output}', provide a filename for output file\n")
+    if args.output is not None:
+        if os.path.isdir(args.output):
+            parser.error(f"\n\n[-] Cannot write over directory '{args.output}', provide a filename for output file\n")
 
 
 def get_args() -> argparse.Namespace:
