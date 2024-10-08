@@ -62,7 +62,7 @@ def parse_headers(headers: HTTPMessage) -> dict:
     Parse the response headers and their values into a
     dictionary
     """
-    header_dict = dict()
+    header_dict = {}
     for header in str(headers).split("\n"):
         delimiter = header.find(":")
         key = header[:delimiter]
