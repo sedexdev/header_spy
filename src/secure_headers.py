@@ -1,3 +1,9 @@
+"""
+Header data module    
+"""
+
+# pylint: disable=line-too-long
+
 from abc import ABC, abstractmethod
 from collections import defaultdict
 
@@ -7,21 +13,27 @@ class SecureHeaderData(ABC):
     Abstract Class containing stubs for additional data
     on the effects and implications of using certain security
     headers and the values that have been assigned to them.
-    Concreate secure header data classes should inherit this
+    Concrete secure header data classes should inherit this
     class
     """
 
     @abstractmethod
     def get_description(self):
-        pass
+        """
+        Method stub for header description
+        """
 
     @abstractmethod
     def get_link(self):
-        pass
+        """
+        Method stub for header OWASP link
+        """
 
     @abstractmethod
     def get_vulnerabilities(self):
-        pass
+        """
+        Method stub for header vulnerability data
+        """
 
 
 class StrictTransportSecurity(SecureHeaderData, ABC):

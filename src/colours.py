@@ -1,3 +1,10 @@
+"""
+Terminal colours class module
+"""
+
+# pylint: disable=too-few-public-methods
+
+
 class TerminalColours:
     """
     Colours for displaying success or failure of

@@ -1,9 +1,30 @@
+"""
+Output handling module    
+"""
+
+# pylint: disable=line-too-long
+
 import sys
 
-from colours import TerminalColours
 from http.client import HTTPMessage
-from secure_headers import *
 from typing import List
+
+from src.colours import TerminalColours
+from src.secure_headers import (
+    StrictTransportSecurity,
+    XFrameOptions,
+    XContentTypeOptions,
+    ContentSecurityPolicy,
+    XPermittedCrossDomainPolicies,
+    ReferrerPolicy,
+    PermissionsPolicy,
+    ClearSiteData,
+    CrossOriginEmbedderPolicy,
+    CrossOriginOpenerPolicy,
+    CrossOriginResourcePolicy,
+    CacheControl
+)
+
 
 SECURITY_HEADERS = [
     "Strict-Transport-Security",
@@ -82,18 +103,21 @@ def uni_file_heading(header: str, subdomain: str, file_path: str, single=True) -
     header_obj = SECURITY_HEADER_INSTANCES.get(header, None)
     vulns = header_obj.get_vulnerabilities() if header_obj else None
     try:
-        with open(file_path, 'a') as file:
+        with open(file_path, 'a', encoding="utf-8") as file:
             if single:
-                file.write("[*] Inspecting presence of {x} header in response from {y}\n".format(x=header, y=subdomain))
-                file.write("[*] {} header not found\n".format(header))
+                file.write(
+                    f"[*] Checking for {header} header in response from {subdomain}\n")
+                file.write(f"[*] {header} header not found\n")
             else:
-                file.write("[*] Inspecting presence of {x} header in responses from {y} and "
-                           "its subdomains\n".format(x=header, y=subdomain))
-                file.write("[*] {} header not found in the domains listed below\n".format(header))
-            file.write("\n[*] Missing {} header can lead to the following vulnerabilities:\n\n".format(header))
+                file.write(f"[*] Checking for {header} header in responses from {subdomain} and "
+                           "its subdomains\n")
+                file.write(
+                    f"[*] {header} header not found in the domains listed below\n")
+            file.write(
+                f"\n[*] Missing {header} header can lead to the following vulnerabilities:\n\n")
             if vulns:
                 for v in vulns:
-                    file.write("[*] {x}: {y}\n".format(x=v, y=vulns[v]))
+                    file.write(f"[*] {v}: {vulns[v]}\n")
             file.write("\n")
     except FileNotFoundError:
         print("\n[-] File write error, check output path\n")
@@ -113,18 +137,18 @@ def verbose_write_file(secure_headers: List, file_path: str) -> None:
         file_path (str)       : output file path
     """
     try:
-        with open(file_path, 'a') as file:
+        with open(file_path, 'a', encoding="utf-8") as file:
             for sh in secure_headers:
                 file.write("================================================"
                            "===============================================\n")
                 header_obj = SECURITY_HEADER_INSTANCES[sh]
-                file.write("Header: {}\n".format(sh))
-                file.write("\nDescription: {}\n".format(header_obj.get_description()))
+                file.write(f"Header: {sh}\n")
+                file.write(f"\nDescription: {header_obj.get_description()}\n")
                 vulns = header_obj.get_vulnerabilities()
                 file.write("\n--- POTENTIAL VULNERABILITIES ---\n\n")
                 for v in vulns:
-                    file.write("{x}: {y}\n\n".format(x=v, y=vulns[v]))
-                file.write("\nOWASP Web Link: {}".format(header_obj.get_link()))
+                    file.write(f"{v}: {vulns[v]}\n\n")
+                file.write(f"\nOWASP Web Link: {header_obj.get_link()}")
                 file.write("\n=================================================="
                            "=============================================\n\n")
     except FileNotFoundError:
@@ -150,13 +174,14 @@ def write_file_uni(headers: HTTPMessage, header: str, subdomain: str, file_path:
     found_headers = header_dict.keys()
     if header not in found_headers:
         try:
-            with open(file_path, 'a') as file:
-                file.write("{}\n".format(subdomain))
+            with open(file_path, 'a', encoding="utf-8") as file:
+                file.write(f"{subdomain}\n")
         except FileNotFoundError:
             print("\n[-] File write error, check output path\n")
             sys.exit(1)
         except PermissionError:
-            print(f"\n[-] You do not have permission to write to '{file_path}'\n")
+            print(
+                f"\n[-] You do not have permission to write to '{file_path}'\n")
             sys.exit(1)
 
 
@@ -174,16 +199,17 @@ def write_file(headers: HTTPMessage, subdomain: str, verbose: bool, file_path: s
     header_dict = parse_headers(headers)
     secure_headers = verify_security(header_dict)
     try:
-        with open(file_path, 'a') as file:
-            file.write("[+] Received response from {}\n\n".format(subdomain))
+        with open(file_path, 'a', encoding="utf-8") as file:
+            file.write(f"[+] Received response from {subdomain}\n\n")
             file.write(str(headers))
             file.write("")
             if len(secure_headers):
-                file.write("[-] Response is missing the following security headers:\n")
+                file.write(
+                    "[-] Response is missing the following security headers:\n")
                 file.write("\n=================================================="
                            "=============================================\n")
                 for sh in secure_headers:
-                    file.write("{}\n".format(sh))
+                    file.write(f"{sh}\n")
                 file.write("=================================================="
                            "=============================================\n\n")
         if verbose:
@@ -208,13 +234,15 @@ def verbose_write_stdout(secure_headers: List) -> None:
         print(TerminalColours.BLUE + "================================================================"
                                      "===============================")
         header_obj = SECURITY_HEADER_INSTANCES[sh]
-        print(TerminalColours.BLUE + "Header: {}".format(sh))
-        print(TerminalColours.BLUE + "\nDescription: {}\n".format(header_obj.get_description()))
+        print(TerminalColours.BLUE + f"Header: {sh}")
+        print(TerminalColours.BLUE +
+              f"\nDescription: {header_obj.get_description()}\n")
         vulns = header_obj.get_vulnerabilities()
         print(TerminalColours.BLUE + "--- POTENTIAL VULNERABILITIES ---\n")
         for v in vulns:
-            print(TerminalColours.BLUE + "{x}: {y}\n".format(x=v, y=vulns[v]))
-        print(TerminalColours.BLUE + "\nOWASP Web Link: {}".format(header_obj.get_link()))
+            print(TerminalColours.BLUE + f"{v}: {vulns[v]}\n")
+        print(TerminalColours.BLUE +
+              f"\nOWASP Web Link: {header_obj.get_link()}")
         print(TerminalColours.BLUE + "================================================================"
                                      "===============================\n")
 
@@ -232,9 +260,9 @@ def write_stdout_uni(headers: HTTPMessage, header: str, subdomain: str) -> None:
     header_dict = parse_headers(headers)
     found_headers = header_dict.keys()
     if header in found_headers:
-        print(TerminalColours.GREEN + "[+] {}".format(subdomain))
+        print(TerminalColours.GREEN + f"[+] {subdomain}")
     else:
-        print(TerminalColours.RED + "[-] {}".format(subdomain))
+        print(TerminalColours.RED + f"[-] {subdomain}")
 
 
 def write_stdout(headers: HTTPMessage, subdomain: str, verbose: bool) -> None:
@@ -247,11 +275,13 @@ def write_stdout(headers: HTTPMessage, subdomain: str, verbose: bool) -> None:
         verbose (bool)        : add additional information if True
     """
     header_dict = parse_headers(headers)
-    print(TerminalColours.GREEN + "\n[+] Received response from {}\n".format(subdomain))
+    print(TerminalColours.GREEN +
+          f"\n[+] Received response from {subdomain}\n")
     print(TerminalColours.PURPLE + str(headers), end="")
     secure_headers = verify_security(header_dict)
     if len(secure_headers):
-        print(TerminalColours.YELLOW + "[-] Response is missing the following security headers:\n")
+        print(TerminalColours.YELLOW +
+              "[-] Response is missing the following security headers:\n")
         print("=======================================================")
         for sh in secure_headers:
             print(TerminalColours.YELLOW + sh)
