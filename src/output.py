@@ -92,8 +92,8 @@ class HeaderSpyIO:
                     file.write(f"\n{100 * "="}\n")
                     header_obj = SECURITY_HEADER_INSTANCES[h]
                     file.write(f"Header: {h}\n")
-                    file.write(f"\nDescription: {
-                               header_obj.get_description()}\n")
+                    file.write(f"\nDescription: \
+                               {header_obj.get_description()}\n")
                     vulns = header_obj.get_vulnerabilities()
                     file.write("\n--- POTENTIAL VULNERABILITIES ---\n\n")
                     for v in vulns:
