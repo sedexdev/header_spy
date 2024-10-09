@@ -12,7 +12,7 @@ from src.colours import TerminalColours
 from src.executor import Executor
 
 
-def add_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
+def create_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     """
     Adds arguments to an instance of argparse.ArgumentParser
     then returns the generated Namespace object
@@ -71,7 +71,7 @@ def get_args() -> argparse.Namespace:
         argparse.Namespace: terminal arguments from user
     """
     parser = argparse.ArgumentParser()
-    add_args(parser)
+    create_parser(parser)
     args = parser.parse_args()
     verify_args(args, parser)
     return args
