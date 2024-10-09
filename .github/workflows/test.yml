@@ -11,6 +11,10 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -25,6 +29,10 @@ jobs:
     needs: lint
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
       - name: Checkout code
         uses: actions/checkout@v4
         with:
