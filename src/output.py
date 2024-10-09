@@ -62,8 +62,7 @@ class HeaderSpyIO:
                 file.write(str(data["response"]))
                 file.write("")
                 if len(data["missing_headers"]):
-                    file.write(
-                        "[-] Response is missing the following security headers:\n")
+                    file.write("[-] Missing the following headers:\n")
                     file.write(f"\n{100 * "="}\n")
                     for h in data["missing_headers"]:
                         file.write(f"{h}\n")
