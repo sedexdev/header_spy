@@ -1,0 +1,32 @@
+---
+name: Test
+permissions: read-all
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "README.md"
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        run: pip install -r src/requirements.txt
+      - name: Lint code
+        run: pylint ./**/*.py
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        run: pip install -r src/requirements.txt
+      - name: Run tests
+        run: pytest tests/*
