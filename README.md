@@ -1,5 +1,7 @@
 # HeaderSpy: A tool for checking secure HTTP headers
 
+[![Test](https://github.com/sedexdev/header_spy/actions/workflows/test.yml/badge.svg)](https://github.com/sedexdev/header_spy/actions/workflows/test.yml)
+
 Makes an HTTP GET request to a domain supplied by the user and then inspects the headers in the HTTP response. The tool 
 lists out the headers that are present, and flags up missing headers that improve the security of communication over HTTP.
 
