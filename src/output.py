@@ -58,15 +58,15 @@ class HeaderSpyIO:
         """
         try:
             with open(file_path, 'a', encoding="utf-8") as file:
-                file.write(f"[+] Received response from {data["url"]}\n\n")
+                file.write(f"[+] Received response from {data['url']}\n\n")
                 file.write(str(data["response"]))
                 file.write("")
                 if len(data["missing_headers"]):
                     file.write("[-] Missing the following headers:\n")
-                    file.write(f"\n{100 * "="}\n")
+                    file.write(f"\n{100 * '='}\n")
                     for h in data["missing_headers"]:
                         file.write(f"{h}\n")
-                    file.write(f"{100 * "="}\n\n")
+                    file.write(f"{100 * '='}\n\n")
         except FileNotFoundError:
             print("\n[-] File write error, check output path\n")
             sys.exit(1)
@@ -88,7 +88,7 @@ class HeaderSpyIO:
             with open(file_path, 'a', encoding="utf-8") as file:
                 file.write("[+] Verbose output\n")
                 for h in missing_headers:
-                    file.write(f"\n{100 * "="}\n")
+                    file.write(f"\n{100 * '='}\n")
                     header_obj = SECURITY_HEADER_INSTANCES[h]
                     file.write(f"Header: {h}\n")
                     file.write(f"\nDescription: \
@@ -98,7 +98,7 @@ class HeaderSpyIO:
                     for v in vulns:
                         file.write(f"{v}: {vulns[v]}\n\n")
                     file.write(f"\nOWASP Web Link: {header_obj.get_link()}")
-                    file.write(f"\n{100 * "="}\n\n")
+                    file.write(f"\n{100 * '='}\n\n")
         except FileNotFoundError:
             print("\n[-] File write error, check output path\n")
             sys.exit(1)
@@ -141,9 +141,9 @@ class HeaderSpyIO:
         try:
             with open(file_path, 'a', encoding="utf-8") as file:
                 if data["inspect_header"] in data["missing_headers"]:
-                    file.write(f"[-] {data["url"]}\n")
+                    file.write(f"[-] {data['url']}\n")
                 else:
-                    file.write(f"[+] {data["url"]}\n")
+                    file.write(f"[+] {data['url']}\n")
         except FileNotFoundError:
             print("\n[-] File write error, check output path\n")
             sys.exit(1)
@@ -160,15 +160,15 @@ class HeaderSpyIO:
             data (dict): data to be written
         """
         print(TerminalColours.GREEN +
-              f"\n[+] Received response from {data["url"]}\n")
+              f"\n[+] Received response from {data['url']}\n")
         print(TerminalColours.PURPLE + str(data["response"]), end="")
         if len(data["missing_headers"]):
             print(TerminalColours.YELLOW +
                   "[-] Response is missing the following security headers:\n")
-            print(f"{100 * "="}")
+            print(f"{100 * '='}")
             for h in data["missing_headers"]:
                 print(TerminalColours.YELLOW + h)
-            print(f"{100 * "="}\n")
+            print(f"{100 * '='}\n")
 
     def write_verbose_stdout(self, missing_headers: list) -> None:
         """
@@ -181,7 +181,7 @@ class HeaderSpyIO:
         print(TerminalColours.BLUE + "[+] Verbose output\n")
         for h in missing_headers:
             header_obj = SECURITY_HEADER_INSTANCES[h]
-            print(TerminalColours.BLUE + f"{100 * "="}")
+            print(TerminalColours.BLUE + f"{100 * '='}")
             print(TerminalColours.BLUE + f"Header: {h}")
             print(TerminalColours.BLUE +
                   f"\nDescription: {header_obj.get_description()}\n")
@@ -191,7 +191,7 @@ class HeaderSpyIO:
                 print(TerminalColours.BLUE + f"{v}: {vulns[v]}\n")
             print(TerminalColours.BLUE +
                   f"\nOWASP Web Link: {header_obj.get_link()}")
-            print(TerminalColours.BLUE + f"{100 * "="}\n")
+            print(TerminalColours.BLUE + f"{100 * '='}\n")
 
     def write_header_stdout(self, header: str) -> None:
         """
@@ -215,6 +215,6 @@ class HeaderSpyIO:
             data (dict): scan data
         """
         if data["inspect_header"] in data["missing_headers"]:
-            print(TerminalColours.RED + f"[-] {data["url"]}")
+            print(TerminalColours.RED + f"[-] {data['url']}")
         else:
-            print(TerminalColours.GREEN + f"[+] {data["url"]}")
+            print(TerminalColours.GREEN + f"[+] {data['url']}")
