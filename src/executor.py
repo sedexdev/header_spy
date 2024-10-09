@@ -206,6 +206,7 @@ class Executor:
         urls = self.get_urls()
         print("\n[+] Sending requests and awaiting responses...\n")
         if self.output:
-            print(f"[+] Writing results to {self.output}, this may take some time...\n")
+            print(
+                f"[+] Writing results to {self.output}, this may take some time...\n")
         self.execute(urls)
         print(TerminalColours.GREEN + "\n[+] Scan complete\n")

@@ -62,7 +62,8 @@ class HeaderSpyIO:
                 file.write(str(data["response"]))
                 file.write("")
                 if len(data["missing_headers"]):
-                    file.write("[-] Response is missing the following security headers:\n")
+                    file.write(
+                        "[-] Response is missing the following security headers:\n")
                     file.write(f"\n{100 * "="}\n")
                     for h in data["missing_headers"]:
                         file.write(f"{h}\n")
@@ -71,7 +72,8 @@ class HeaderSpyIO:
             print("\n[-] File write error, check output path\n")
             sys.exit(1)
         except PermissionError:
-            print(f"\n[-] You do not have permission to write to '{file_path}'\n")
+            print(
+                f"\n[-] You do not have permission to write to '{file_path}'\n")
             sys.exit(1)
 
     def write_verbose(self, missing_headers: list, file_path: str) -> None:
@@ -90,7 +92,8 @@ class HeaderSpyIO:
                     file.write(f"\n{100 * "="}\n")
                     header_obj = SECURITY_HEADER_INSTANCES[h]
                     file.write(f"Header: {h}\n")
-                    file.write(f"\nDescription: {header_obj.get_description()}\n")
+                    file.write(f"\nDescription: {
+                               header_obj.get_description()}\n")
                     vulns = header_obj.get_vulnerabilities()
                     file.write("\n--- POTENTIAL VULNERABILITIES ---\n\n")
                     for v in vulns:
@@ -101,7 +104,8 @@ class HeaderSpyIO:
             print("\n[-] File write error, check output path\n")
             sys.exit(1)
         except PermissionError:
-            print(f"\n[-] You do not have permission to write to '{file_path}'\n")
+            print(
+                f"\n[-] You do not have permission to write to '{file_path}'\n")
             sys.exit(1)
 
     def write_header(self, header: str, file_path: str) -> None:
@@ -122,7 +126,8 @@ class HeaderSpyIO:
                 print("\n[-] File write error, check output path\n")
                 sys.exit(1)
             except PermissionError:
-                print(f"\n[-] You do not have permission to write to '{file_path}'\n")
+                print(
+                    f"\n[-] You do not have permission to write to '{file_path}'\n")
                 sys.exit(1)
 
     def write_inspection(self, data: dict, file_path: str) -> None:
@@ -144,7 +149,8 @@ class HeaderSpyIO:
             print("\n[-] File write error, check output path\n")
             sys.exit(1)
         except PermissionError:
-            print(f"\n[-] You do not have permission to write to '{file_path}'\n")
+            print(
+                f"\n[-] You do not have permission to write to '{file_path}'\n")
             sys.exit(1)
 
     def write_stdout(self, data: dict) -> None:
@@ -154,10 +160,12 @@ class HeaderSpyIO:
         Args:
             data (dict): data to be written
         """
-        print(TerminalColours.GREEN + f"\n[+] Received response from {data["url"]}\n")
+        print(TerminalColours.GREEN +
+              f"\n[+] Received response from {data["url"]}\n")
         print(TerminalColours.PURPLE + str(data["response"]), end="")
         if len(data["missing_headers"]):
-            print(TerminalColours.YELLOW + "[-] Response is missing the following security headers:\n")
+            print(TerminalColours.YELLOW +
+                  "[-] Response is missing the following security headers:\n")
             print(f"{100 * "="}")
             for h in data["missing_headers"]:
                 print(TerminalColours.YELLOW + h)
@@ -176,12 +184,14 @@ class HeaderSpyIO:
             header_obj = SECURITY_HEADER_INSTANCES[h]
             print(TerminalColours.BLUE + f"{100 * "="}")
             print(TerminalColours.BLUE + f"Header: {h}")
-            print(TerminalColours.BLUE + f"\nDescription: {header_obj.get_description()}\n")
+            print(TerminalColours.BLUE +
+                  f"\nDescription: {header_obj.get_description()}\n")
             vulns = header_obj.get_vulnerabilities()
             print(TerminalColours.BLUE + "--- POTENTIAL VULNERABILITIES ---\n")
             for v in vulns:
                 print(TerminalColours.BLUE + f"{v}: {vulns[v]}\n")
-            print(TerminalColours.BLUE + f"\nOWASP Web Link: {header_obj.get_link()}")
+            print(TerminalColours.BLUE +
+                  f"\nOWASP Web Link: {header_obj.get_link()}")
             print(TerminalColours.BLUE + f"{100 * "="}\n")
 
     def write_header_stdout(self, header: str) -> None:

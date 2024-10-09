@@ -62,7 +62,6 @@ def verify_args(args: argparse.Namespace, parser: argparse.ArgumentParser) -> No
             parser.error("\n\n[-] Path exists and is not empty, aborting\n")
 
 
-
 def get_args() -> argparse.Namespace:
     """
     Gets command line arguments from the user
