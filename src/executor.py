@@ -2,33 +2,49 @@
 Executor module for core functionality
 """
 
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long, too-many-instance-attributes
 
 import argparse
 import sys
 import urllib.request
 import urllib.error
 
-from concurrent.futures import as_completed, ThreadPoolExecutor
-
 from http.client import HTTPMessage
+from concurrent.futures import as_completed, ThreadPoolExecutor
 from socket import timeout
 from typing import List
 
 from src.colours import TerminalColours
-from src.output import (
-    uni_file_heading,
-    write_file_uni,
-    write_file,
-    write_stdout_uni,
-    write_stdout
-)
+from src.output import HeaderSpyIO
+
+
+SECURITY_HEADERS = [
+    "Strict-Transport-Security",
+    "X-Frame-Options",
+    "X-Content-Type-Options",
+    "Content-Security-Policy",
+    "X-Permitted-Cross-Domain-Policies",
+    "Referrer-Policy",
+    "Permissions-Policy",
+    "Clear-Site-Data",
+    "Cross-Origin-Embedder-Policy",
+    "Cross-Origin-Opener-Policy",
+    "Cross-Origin-Resource-Policy",
+    "Cache-Control",
+]
 
 
 class Executor:
     """
     Class defining behaviour for header response
     analysis
+
+    TODO
+        - collect all missing headers from all requests
+          when enumerating subdomains
+        - fix write_header_stdout printing bug - since
+          threads run at different times the heading is
+          printed anywhere in the results
     """
 
     def __init__(self, args: argparse.Namespace):
@@ -38,17 +54,34 @@ class Executor:
         Args:
             args (argparse.Namespace): cmd args
         """
-        self.args = args
         self.domain = args.domain
-        self.enum_sub = args.enum_sub
         self.output = args.output
         self.secure = args.secure
         self.threads = args.threads
-        self.uni = args.uni
+        self.inspect = args.inspect
         self.verbose = args.verbose
         self.word_list = args.word_list
         self.protocol = "https://" if self.secure else "http://"
-        self.url = f"{self.protocol}{self.domain}"
+        self.io = HeaderSpyIO()
+
+    def get_urls(self) -> List:
+        """
+        Populate a list with urls using words from
+        self.word_list
+
+        Returns:
+            List: list of subdomains
+        """
+        try:
+            with open(self.word_list, 'r', encoding="utf-8") as file:
+                words = file.read().splitlines()
+                urls = [f"{self.protocol}{w}.{self.domain}" for w in words]
+                # add root domain to list
+                urls = [f"{self.protocol}{self.domain}"] + urls
+                return urls
+        except FileNotFoundError:
+            print(f"\n[-] Bad path. Word list not found at {self.word_list}\n")
+            sys.exit(1)
 
     def make_request(self, url: str) -> HTTPMessage:
         """
@@ -63,111 +96,116 @@ class Executor:
         with urllib.request.urlopen(url, timeout=10) as conn:
             return conn.info()
 
-    def update_domains(self) -> List:
+    def parse_headers(self, response: HTTPMessage) -> list:
         """
-        Populate the deque with urls using words from
-        subdomains-10000.txt
+        Parse the missing response headers into a list
 
         Returns:
-            List: list of subdomains
+            list: list of missing headers
         """
-        try:
-            with open(self.word_list, 'r', encoding="utf-8") as file:
-                words = file.read().splitlines()
-                sub_d = [f"{self.protocol}{w}.{self.domain}" for w in words]
-                # add root domain to list
-                sub_d = [f"{self.protocol}{self.domain}"] + sub_d
-                return sub_d
-        except FileNotFoundError:
-            print(
-                f"\n[-] Bad path. Word list not found at {self.word_list}\n")
-            sys.exit(1)
+        headers = []
+        for row in str(response).split("\n"):
+            delimiter = row.find(":")
+            header = row[:delimiter]
+            headers.append(header)
+        return [x for x in SECURITY_HEADERS if x not in headers]
 
-    def handle_output(self, output: bool, response: HTTPMessage) -> None:
+    def handle_output(self, data: dict) -> None:
         """
         Processes responses by sending data to the correct
         output function depending on input provided by the
         user
 
         Args:
-            output (bool):          write headers to file if True
-            response (HTTPMessage): response from HTTP GET request
+            data (dict): scan data
         """
-        if output:
-            if self.uni:
-                write_file_uni(response, self.uni, self.url, output)
+        if self.output is not None:
+            print(f"[+] Writing results to {self.output}...")
+            if self.inspect:
+                print(f"[+] Inspecting responses for '{self.inspect}'")
+                self.io.write_header(data["inspect_header"], self.output)
+                self.io.write_inspection(data, self.output)
             else:
-                write_file(response, self.url, self.verbose, output)
+                self.io.write_file(data, self.output)
         else:
-            if self.uni:
-                write_stdout_uni(response, self.uni, self.url)
+            # otherwise send to stdout
+            if self.inspect:
+                self.io.write_header_stdout(data["inspect_header"])
+                self.io.write_inspection_stdout(data)
             else:
-                write_stdout(response, self.url, self.verbose)
+                self.io.write_stdout(data)
 
-    def execute(self, sub_d: List, output=False) -> None:
+    def handle_verbose(self, missing_headers: list) -> None:
+        """
+        Adds verbose output at the end of processing
+        if requested by the user
+
+        Args:
+            missing_headers (list) : missing header list 
+        """
+        if self.verbose:
+            if self.output is not None:
+                self.io.write_verbose(missing_headers, self.output)
+            else:
+                self.io.write_verbose_stdout(missing_headers)
+
+    def execute(self, urls: List) -> None:
         """
         Creates a thread pool with <args.threads> number
         of threads for making parallel requests
 
+        TODO - need to collect all missing headers, not just from last request
+
         Args:
-            sub_d (List):    list of subdomains
-            output (bool):   write headers to file if True
+            urls (List): list of subdomains
         """
         with ThreadPoolExecutor(max_workers=self.threads) as e:
-            future_to_url = {e.submit(self.make_request, s): s for s in sub_d}
+            future_to_url = {e.submit(self.make_request, s): s for s in urls}
             for future in as_completed(future_to_url):
                 url = future_to_url[future]
                 try:
                     response = future.result()
-                    self.handle_output(output, response)
+                    data = {
+                        "inspect_header": self.inspect,
+                        "url": url,
+                        "response": response,
+                        "missing_headers": self.parse_headers(response),
+                    }
+                    self.handle_output(data)
                 except timeout as e:
-                    if not output:
-                        print(TerminalColours.RED + f"[-] {url}: {e}")
+                    print(TerminalColours.RED + f"[-] {url}: {e}")
                 except urllib.error.URLError as e:
-                    if not output:
-                        print(TerminalColours.RED + f"[-] {url}: {e.reason}")
+                    print(TerminalColours.RED + f"[-] {url}: {e.reason}")
+        self.handle_verbose(data["missing_headers"])
 
-    def handle_multiple_domains(self) -> None:
-        """
-        Perform all necessary actions when the user has
-        specified that subdomains should be enumerated
-        """
-        sub_d = self.update_domains()
-        if self.output:
-            print("\n[+] Sending requests and awaiting responses...")
-            print(
-                f"[+] Writing results to {self.output}, this may take some time...\n")
-            if not self.enum_sub:
-                uni_file_heading(self.uni, self.domain, self.output, False)
-            self.execute(sub_d, True)
-        else:
-            print("\n[+] Sending requests and awaiting responses...\n")
-            self.execute(sub_d)
-        print(TerminalColours.GREEN + "\n[+] Processes complete\n")
-
-    def handle_single_domain(self) -> None:
+    def handle_single(self) -> None:
         """
         Perform all necessary actions when the user has
         specified that only a single domain should be
-        inspected
+        scanned
         """
-        headers = self.make_request(self.url)
+        url = f"{self.protocol}{self.domain}"
+        print("\n[+] Sending request and awaiting response...")
+        response = self.make_request(url)
+        data = {
+            "inspect_header": self.inspect,
+            "url": url,
+            "response": response,
+            "missing_headers": self.parse_headers(response),
+        }
+        self.handle_output(data)
+        self.handle_verbose(data["missing_headers"])
+        print(TerminalColours.GREEN + "\n[+] Scan complete\n")
+
+    def handle_multiple(self) -> None:
+        """
+        Perform all necessary actions when the user has
+        provided a word list of subdomains that will be
+        enumerated while scanning
+        """
+        urls = self.get_urls()
+        print("\n[+] Sending requests and awaiting responses...\n")
         if self.output:
-            print("\n[+] Sending requests and awaiting responses...")
-            if self.uni:
-                print(TerminalColours.GREEN +
-                      f"[+] Inspecting responses for header '{self.uni}'")
-                print(TerminalColours.GREEN +
-                      f"[+] Writing results to {self.output}...")
-                uni_file_heading(self.uni, self.url, self.output)
-            else:
-                print(f"[+] Writing results to {self.output}...")
-                write_file(headers, self.url, self.verbose, self.output)
-        else:
-            if self.uni:
-                print(
-                    f"\n[+] Inspecting responses for header '{self.uni}'\n")
-                write_stdout_uni(headers, self.uni, self.url)
-            else:
-                write_stdout(headers, self.url, self.verbose)
-        print(TerminalColours.GREEN + "\n[+] Processes complete\n")
+            print(f"[+] Writing results to {self.output}, this may take some time...\n")
+        self.execute(urls)
+        print(TerminalColours.GREEN + "\n[+] Scan complete\n")

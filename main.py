@@ -24,8 +24,6 @@ def add_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     """
     parser.add_argument("-d", "--domain", dest="domain",
                         help="Web domain whose headers you want to inspect")
-    parser.add_argument("-e", "--enum-sub", action="store_true",
-                        help="Enumerate subdomains from this domain")
     parser.add_argument("-o", "--output", dest="output",
                         help="Path of save location for output file")
     parser.add_argument("-s", "--secure", action="store_true",
@@ -37,8 +35,8 @@ def add_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
         help="Number of threads to use to enumerate subdomains. Default is 10",
         default=10,
         type=int)
-    parser.add_argument("-u", "--uni-header", dest="uni",
-                        help="Display which responses contain a specific header")
+    parser.add_argument("-i", "--inspect-header", dest="inspect",
+                        help="Highlight which responses contain a specific header")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Outputs additional details")
     parser.add_argument("-w", "--wordlist", dest="word_list",
@@ -57,8 +55,6 @@ def verify_args(args: argparse.Namespace, parser: argparse.ArgumentParser) -> No
     """
     if not args.domain:
         parser.error("\n\n[-] Expected a domain for the HTTP GET request\n")
-    if args.enum_sub and not args.word_list:
-        parser.error("\n\n[-] Cannot enumerate subdomains without word list\n")
     if args.output is not None:
         if os.path.isdir(args.output):
             parser.error(f"\n\n[-] Path is directory: '{args.output}'\n")
@@ -84,12 +80,12 @@ def main() -> None:
     """
     executor = Executor(get_args())
     try:
-        if executor.enum_sub:
-            executor.handle_multiple_domains()
+        if executor.word_list is None:
+            executor.handle_single()
         else:
-            executor.handle_single_domain()
+            executor.handle_multiple()
     except urllib.error.URLError as e:
-        print(TerminalColours.RED + f"[-] {executor.url}: {e.reason}")
+        print(TerminalColours.RED + f"[-] {executor.domain}: {e.reason}")
 
 
 if __name__ == "__main__":
