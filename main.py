@@ -25,7 +25,7 @@ def add_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
     parser.add_argument("-d", "--domain", dest="domain",
                         help="Web domain whose headers you want to inspect")
     parser.add_argument("-o", "--output", dest="output",
-                        help="Path of save location for output file")
+                        help="Absolute or relative path to file to send output to")
     parser.add_argument("-s", "--secure", action="store_true",
                         help="Send requests using HTTPS")
     parser.add_argument(
@@ -58,6 +58,9 @@ def verify_args(args: argparse.Namespace, parser: argparse.ArgumentParser) -> No
     if args.output is not None:
         if os.path.isdir(args.output):
             parser.error(f"\n\n[-] Path is directory: '{args.output}'\n")
+        if os.path.exists(args.output) and os.path.getsize(args.output) > 0:
+            parser.error("\n\n[-] Path exists and is not empty, aborting\n")
+
 
 
 def get_args() -> argparse.Namespace:
