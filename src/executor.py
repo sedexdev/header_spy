@@ -110,30 +110,18 @@ class Executor:
             headers.append(header)
         return [x for x in SECURITY_HEADERS if x not in headers]
 
-    def handle_output(self, data: dict) -> None:
+    def handle_header(self, header: str) -> None:
         """
-        Processes responses by sending data to the correct
-        output function depending on input provided by the
-        user
+        Writes the header data for a single header lookup to file 
+        or sends it to stdout based on self.output
 
         Args:
-            data (dict): scan data
+            header (str): header being looked up
         """
         if self.output is not None:
-            print(f"[+] Writing results to {self.output}...")
-            if self.inspect:
-                print(f"[+] Inspecting responses for '{self.inspect}'")
-                self.io.write_header(data["inspect_header"], self.output)
-                self.io.write_inspection(data, self.output)
-            else:
-                self.io.write_file(data, self.output)
+            self.io.write_header(header, self.output)
         else:
-            # otherwise send to stdout
-            if self.inspect:
-                self.io.write_header_stdout(data["inspect_header"])
-                self.io.write_inspection_stdout(data)
-            else:
-                self.io.write_stdout(data)
+            self.io.write_header_stdout(header)
 
     def handle_verbose(self, missing_headers: list) -> None:
         """
@@ -148,6 +136,27 @@ class Executor:
                 self.io.write_verbose(missing_headers, self.output)
             else:
                 self.io.write_verbose_stdout(missing_headers)
+
+    def handle_output(self, data: dict) -> None:
+        """
+        Processes responses by sending data to the correct
+        output function depending on input provided by the
+        user
+
+        Args:
+            data (dict): scan data
+        """
+        if self.output is not None:
+            if self.inspect is not None:
+                self.io.write_inspection(data, self.output)
+            else:
+                self.io.write_file(data, self.output)
+        else:
+            # otherwise send to stdout
+            if self.inspect is not None:
+                self.io.write_inspection_stdout(data)
+            else:
+                self.io.write_stdout(data)
 
     def execute(self, urls: List) -> None:
         """
@@ -186,6 +195,8 @@ class Executor:
         """
         url = f"{self.protocol}{self.domain}"
         print("\n[+] Sending request and awaiting response...")
+        if self.output is not None:
+            print(f"[+] Writing results to '{self.output}'...")
         response = self.make_request(url)
         data = {
             "inspect_header": self.inspect,
@@ -193,6 +204,8 @@ class Executor:
             "response": response,
             "missing_headers": self.parse_headers(response),
         }
+        if self.inspect is not None:
+            self.handle_header(self.inspect)
         self.handle_output(data)
         self.handle_verbose(data["missing_headers"])
         print(TerminalColours.GREEN + "\n[+] Scan complete\n")
@@ -204,9 +217,10 @@ class Executor:
         enumerated while scanning
         """
         urls = self.get_urls()
+        if self.inspect is not None:
+            self.handle_header(self.inspect)
         print("\n[+] Sending requests and awaiting responses...\n")
-        if self.output:
-            print(
-                f"[+] Writing results to {self.output}, this may take some time...\n")
+        if self.output is not None:
+            print(f"[+] Writing results to '{self.output}'...\n")
         self.execute(urls)
         print(TerminalColours.GREEN + "\n[+] Scan complete\n")

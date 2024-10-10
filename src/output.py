@@ -44,10 +44,6 @@ class HeaderSpyIO:
     File and output processing behaviour
     """
 
-    def __init__(self):
-        self.file_heading = False
-        self.stdout_heading = False
-
     def write_file(self, data: dict, file_path: str) -> None:
         """
         Writes the output to a file defined by self.file_path
@@ -116,18 +112,16 @@ class HeaderSpyIO:
             header (str)    : header under inspection
             file_path (str) : output file path
         """
-        if not self.file_heading:
-            try:
-                with open(file_path, 'a', encoding="utf-8") as file:
-                    file.write(f"Results when scanning for '{header}'\n")
-                    self.file_heading = True
-            except FileNotFoundError:
-                print("\n[-] File write error, check output path\n")
-                sys.exit(1)
-            except PermissionError:
-                print(
-                    f"\n[-] You do not have permission to write to '{file_path}'\n")
-                sys.exit(1)
+        try:
+            with open(file_path, 'a', encoding="utf-8") as file:
+                file.write(f"Results when scanning for '{header}'\n")
+        except FileNotFoundError:
+            print("\n[-] File write error, check output path\n")
+            sys.exit(1)
+        except PermissionError:
+            print(
+                f"\n[-] You do not have permission to write to '{file_path}'\n")
+            sys.exit(1)
 
     def write_inspection(self, data: dict, file_path: str) -> None:
         """
@@ -201,9 +195,7 @@ class HeaderSpyIO:
         Args:
             header (str): header under inspection
         """
-        if not self.stdout_heading:
-            print(f"[+] Results when scanning for '{header}'\n")
-            self.stdout_heading = True
+        print(f"\n[+] Results when scanning for '{header}'\n")
 
     def write_inspection_stdout(self, data: dict) -> None:
         """
