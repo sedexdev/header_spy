@@ -39,5 +39,7 @@ jobs:
           python-version: "3.12.3"
       - name: Install dependencies
         run: pip install -r requirements.txt
+      - name: Run test Web server
+        run: flask --app test_srv/app:app --debug run
       - name: Run tests
         run: pytest tests/*
