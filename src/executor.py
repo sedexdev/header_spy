@@ -38,13 +38,6 @@ class Executor:
     """
     Class defining behaviour for header response
     analysis
-
-    TODO
-        - collect all missing headers from all requests
-          when enumerating subdomains
-        - fix write_header_stdout printing bug - since
-          threads run at different times the heading is
-          printed anywhere in the results
     """
 
     def __init__(self, args: argparse.Namespace):
@@ -118,10 +111,10 @@ class Executor:
         Args:
             header (str): header being looked up
         """
-        if self.output is not None:
-            self.io.write_header(header, self.output)
+        if self.output:
+            self.io.write_header(self.domain, header, self.output)
         else:
-            self.io.write_header_stdout(header)
+            self.io.write_header_stdout(self.domain, header)
 
     def handle_verbose(self, missing_headers: list) -> None:
         """
@@ -132,7 +125,7 @@ class Executor:
             missing_headers (list) : missing header list 
         """
         if self.verbose:
-            if self.output is not None:
+            if self.output:
                 self.io.write_verbose(missing_headers, self.output)
             else:
                 self.io.write_verbose_stdout(missing_headers)
@@ -146,14 +139,14 @@ class Executor:
         Args:
             data (dict): scan data
         """
-        if self.output is not None:
-            if self.inspect is not None:
+        if self.output:
+            if self.inspect:
                 self.io.write_inspection(data, self.output)
             else:
                 self.io.write_file(data, self.output)
         else:
             # otherwise send to stdout
-            if self.inspect is not None:
+            if self.inspect:
                 self.io.write_inspection_stdout(data)
             else:
                 self.io.write_stdout(data)
@@ -163,29 +156,32 @@ class Executor:
         Creates a thread pool with <args.threads> number
         of threads for making parallel requests
 
-        TODO - need to collect all missing headers, not just from last request
-
         Args:
             urls (List): list of subdomains
         """
+        missing_headers = set()
         with ThreadPoolExecutor(max_workers=self.threads) as e:
             future_to_url = {e.submit(self.make_request, s): s for s in urls}
             for future in as_completed(future_to_url):
                 url = future_to_url[future]
                 try:
                     response = future.result()
+                    headers = self.parse_headers(response)
                     data = {
                         "inspect_header": self.inspect,
                         "url": url,
                         "response": response,
-                        "missing_headers": self.parse_headers(response),
+                        "missing_headers": headers,
                     }
                     self.handle_output(data)
+                    # update the missing_headers set
+                    for header in headers:
+                        missing_headers.add(header)
                 except timeout as e:
                     print(TerminalColours.RED + f"[-] {url}: {e}")
                 except urllib.error.URLError as e:
                     print(TerminalColours.RED + f"[-] {url}: {e.reason}")
-        self.handle_verbose(data["missing_headers"])
+        self.handle_verbose(missing_headers)
 
     def handle_single(self) -> None:
         """
@@ -195,7 +191,7 @@ class Executor:
         """
         url = f"{self.protocol}{self.domain}"
         print("\n[+] Sending request and awaiting response...")
-        if self.output is not None:
+        if self.output:
             print(f"[+] Writing results to '{self.output}'...")
         response = self.make_request(url)
         data = {
@@ -204,7 +200,7 @@ class Executor:
             "response": response,
             "missing_headers": self.parse_headers(response),
         }
-        if self.inspect is not None:
+        if self.inspect:
             self.handle_header(self.inspect)
         self.handle_output(data)
         self.handle_verbose(data["missing_headers"])
@@ -217,10 +213,10 @@ class Executor:
         enumerated while scanning
         """
         urls = self.get_urls()
-        if self.inspect is not None:
+        if self.inspect:
             self.handle_header(self.inspect)
-        print("\n[+] Sending requests and awaiting responses...\n")
-        if self.output is not None:
+        print("[+] Sending requests and awaiting responses...\n")
+        if self.output:
             print(f"[+] Writing results to '{self.output}'...\n")
         self.execute(urls)
         print(TerminalColours.GREEN + "\n[+] Scan complete\n")
