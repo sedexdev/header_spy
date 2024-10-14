@@ -4,6 +4,7 @@ Header Spy tool test module
 
 import argparse
 import os
+import urllib.error
 
 from types import SimpleNamespace
 
@@ -42,7 +43,7 @@ ARGS_SINGLE_INSPECT = {
 }
 ARGS_SINGLE_OUTPUT = {
     "domain": "127.0.0.1:5000",
-    "output": "scan.txt",
+    "output": "test_scan.txt",
     "secure": False,
     "threads": None,
     "inspect": None,
@@ -87,7 +88,7 @@ ARGS_MULTI_INSPECT = {
 }
 ARGS_MULTI_OUTPUT = {
     "domain": "127.0.0.1:5000",
-    "output": "scan.txt",
+    "output": "test_scan.txt",
     "secure": False,
     "threads": None,
     "inspect": None,
@@ -190,9 +191,9 @@ class TestParser:
 
     def test_verify_args_throws_error_without_domain(self, capsys) -> None:
         """
-        Assert non-zero exit code and message if domain not passed in 
+        Assert non-zero exit code and message if domain not passed in
         """
-        args = self.parser.parse_args(["-o", "scan.txt", "-v"])
+        args = self.parser.parse_args(["-o", "test_scan.txt", "-v"])
         with pytest.raises(SystemExit) as error:
             verify_args(args, self.parser)
         _, msg = capsys.readouterr()
@@ -265,7 +266,7 @@ class TestExecutor:
         """
         # clean up the output file if it was created during testing
         try:
-            os.remove("scan.txt")
+            os.remove("test_scan.txt")
         except FileNotFoundError:
             pass
 
@@ -279,3 +280,108 @@ class TestExecutor:
             "[+] Received response from http://127.0.0.1:5000" in out and \
             "[-] Response is missing the following security headers:" in out and \
             "Cross-Origin-Resource-Policy" in out
+
+    def test_single_domain_secure_scan_uses_https(self) -> None:
+        """
+        Assert request uses HTTPS - this will raise an exception on localhost
+        """
+        with pytest.raises(urllib.error.URLError) as error:
+            self.single_secure.handle_single()
+        assert \
+            self.single_secure.protocol == "https://" and \
+            "[SSL: WRONG_VERSION_NUMBER]" in str(error.value.reason)
+
+    def test_single_domain_inspect_checks_for_given_header(self, capsys) -> None:
+        """
+        Assert correct message sent to stdout and result contains header
+        """
+        self.single_inspect.handle_single()
+        out, _ = capsys.readouterr()
+        assert \
+            "[+] Results when scanning 127.0.0.1:5000 for 'Strict-Transport-Security'" in out and \
+            "[+] http://127.0.0.1:5000" in out
+
+    def test_single_domain_output_writes_out_to_files(self) -> None:
+        """
+        Assert output written to test_scan.txt
+        """
+        self.single_output.handle_single()
+        with open("test_scan.txt", "r", encoding="utf-8") as file:
+            output = file.read()
+        assert \
+            "[+] Received response from http://127.0.0.1:5000" in output and \
+            "[-] Response is missing the following security headers:" in output and \
+            "Cross-Origin-Resource-Policy" in output
+
+    def test_single_domain_verbose_provides_additional_information(self, capsys) -> None:
+        """
+        Assert that the verbose switch provides additional data on missing headers
+        """
+        self.single_verbose.handle_single()
+        out, _ = capsys.readouterr()
+        assert \
+            "[+] Verbose output" in out and \
+            "Description" in out and \
+            "--- POTENTIAL VULNERABILITIES ---" in out and \
+            "OWASP Web Link" in out
+
+    def test_multi_domain_scan_returns_missing_headers(self, capsys) -> None:
+        """
+        Assert test headers are not in missing headers returned
+        """
+        self.multi.handle_multiple()
+        out, _ = capsys.readouterr()
+        assert \
+            "[+] Received response from http://127.0.0.1:5000" in out and \
+            "[-] Response is missing the following security headers:" in out and \
+            "Cross-Origin-Resource-Policy" in out and \
+            "http://ftp.127.0.0.1:5000" in out and \
+            "http://ipv4.127.0.0.1:5000" in out and \
+            "http://api.127.0.0.1:5000" in out
+
+    def test_multi_domain_secure_scan_uses_https(self, capsys) -> None:
+        """
+        Assert request uses HTTPS
+        """
+        self.multi_secure.handle_multiple()
+        out, _ = capsys.readouterr()
+        assert \
+            self.multi_secure.protocol == "https://" and \
+            "[SSL: WRONG_VERSION_NUMBER]" in out
+
+    def test_multi_domain_inspect_checks_for_given_header(self, capsys) -> None:
+        """
+        Assert correct message sent to stdout and result contains header
+        """
+        self.multi_inspect.handle_multiple()
+        out, _ = capsys.readouterr()
+        assert \
+            "[+] Results when scanning 127.0.0.1:5000 for 'Strict-Transport-Security'" in out and \
+            "[+] http://127.0.0.1:5000" in out and \
+            "http://ftp.127.0.0.1:5000" in out and \
+            "http://ipv4.127.0.0.1:5000" in out and \
+            "http://api.127.0.0.1:5000" in out
+
+    def test_multi_domain_output_writes_out_to_files(self) -> None:
+        """
+        Assert output written to test_scan.txt
+        """
+        self.multi_output.handle_multiple()
+        with open("test_scan.txt", "r", encoding="utf-8") as file:
+            output = file.read()
+        assert \
+            "[+] Received response from http://127.0.0.1:5000" in output and \
+            "[-] Response is missing the following security headers:" in output and \
+            "Cross-Origin-Resource-Policy" in output
+
+    def test_multi_domain_verbose_provides_additional_information(self, capsys) -> None:
+        """
+        Assert that the verbose switch provides additional data on missing headers
+        """
+        self.multi_verbose.handle_multiple()
+        out, _ = capsys.readouterr()
+        assert \
+            "[+] Verbose output" in out and \
+            "Description" in out and \
+            "--- POTENTIAL VULNERABILITIES ---" in out and \
+            "OWASP Web Link" in out
