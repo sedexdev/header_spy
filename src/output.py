@@ -103,18 +103,19 @@ class HeaderSpyIO:
                 f"\n[-] You do not have permission to write to '{file_path}'\n")
             sys.exit(1)
 
-    def write_header(self, header: str, file_path: str) -> None:
+    def write_header(self, domain: str, header: str, file_path: str) -> None:
         """
         Writes a heading at the top of the file
         when a single header is being inspected 
 
         Args:
+            domain (str)    : domain being scanned
             header (str)    : header under inspection
             file_path (str) : output file path
         """
         try:
             with open(file_path, 'a', encoding="utf-8") as file:
-                file.write(f"Results when scanning for '{header}'\n")
+                file.write(f"Results when scanning {domain} for '{header}'\n")
         except FileNotFoundError:
             print("\n[-] File write error, check output path\n")
             sys.exit(1)
@@ -134,10 +135,9 @@ class HeaderSpyIO:
         """
         try:
             with open(file_path, 'a', encoding="utf-8") as file:
+                # only write missing header URLs
                 if data["inspect_header"] in data["missing_headers"]:
                     file.write(f"[-] {data['url']}\n")
-                else:
-                    file.write(f"[+] {data['url']}\n")
         except FileNotFoundError:
             print("\n[-] File write error, check output path\n")
             sys.exit(1)
@@ -187,15 +187,16 @@ class HeaderSpyIO:
                   f"\nOWASP Web Link: {header_obj.get_link()}")
             print(TerminalColours.BLUE + f"{100 * '='}\n")
 
-    def write_header_stdout(self, header: str) -> None:
+    def write_header_stdout(self, domain: str, header: str) -> None:
         """
         Sends a heading to the top of stdout
         when a single header is being inspected
 
         Args:
+            domain (str)    : domain being scanned
             header (str): header under inspection
         """
-        print(f"\n[+] Results when scanning for '{header}'\n")
+        print(f"\n[+] Results when scanning {domain} for '{header}'\n")
 
     def write_inspection_stdout(self, data: dict) -> None:
         """
@@ -207,6 +208,6 @@ class HeaderSpyIO:
             data (dict): scan data
         """
         if data["inspect_header"] in data["missing_headers"]:
-            print(TerminalColours.RED + f"[-] {data['url']}")
+            print(TerminalColours.BLUE + f"[-] {data['url']}")
         else:
             print(TerminalColours.GREEN + f"[+] {data['url']}")
