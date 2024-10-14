@@ -5,10 +5,104 @@ Header Spy tool test module
 import argparse
 import os
 
+from types import SimpleNamespace
+
 import pytest
 
 from main import create_parser, verify_args
-# from src.executor import Executor
+from src.executor import Executor
+
+
+ARGS_SINGLE = {
+    "domain": "127.0.0.1:5000",
+    "output": None,
+    "secure": False,
+    "threads": None,
+    "inspect": None,
+    "verbose": False,
+    "word_list": None
+}
+ARGS_SINGLE_SECURE = {
+    "domain": "127.0.0.1:5000",
+    "output": None,
+    "secure": True,
+    "threads": None,
+    "inspect": None,
+    "verbose": False,
+    "word_list": None
+}
+ARGS_SINGLE_INSPECT = {
+    "domain": "127.0.0.1:5000",
+    "output": None,
+    "secure": False,
+    "threads": None,
+    "inspect": "Strict-Transport-Security",
+    "verbose": False,
+    "word_list": None
+}
+ARGS_SINGLE_OUTPUT = {
+    "domain": "127.0.0.1:5000",
+    "output": "scan.txt",
+    "secure": False,
+    "threads": None,
+    "inspect": None,
+    "verbose": False,
+    "word_list": None
+}
+ARGS_SINGLE_VERBOSE = {
+    "domain": "127.0.0.1:5000",
+    "output": None,
+    "secure": False,
+    "threads": None,
+    "inspect": None,
+    "verbose": True,
+    "word_list": None
+}
+ARGS_MULTI = {
+    "domain": "127.0.0.1:5000",
+    "output": None,
+    "secure": False,
+    "threads": None,
+    "inspect": None,
+    "verbose": False,
+    "word_list": "word_lists/subdomains-100.txt"
+}
+ARGS_MULTI_SECURE = {
+    "domain": "127.0.0.1:5000",
+    "output": None,
+    "secure": True,
+    "threads": None,
+    "inspect": None,
+    "verbose": False,
+    "word_list": "word_lists/subdomains-100.txt"
+}
+ARGS_MULTI_INSPECT = {
+    "domain": "127.0.0.1:5000",
+    "output": None,
+    "secure": False,
+    "threads": None,
+    "inspect": "Strict-Transport-Security",
+    "verbose": False,
+    "word_list": "word_lists/subdomains-100.txt"
+}
+ARGS_MULTI_OUTPUT = {
+    "domain": "127.0.0.1:5000",
+    "output": "scan.txt",
+    "secure": False,
+    "threads": None,
+    "inspect": None,
+    "verbose": False,
+    "word_list": "word_lists/subdomains-100.txt"
+}
+ARGS_MULTI_VERBOSE = {
+    "domain": "127.0.0.1:5000",
+    "output": None,
+    "secure": False,
+    "threads": None,
+    "inspect": None,
+    "verbose": True,
+    "word_list": "word_lists/subdomains-100.txt"
+}
 
 
 class TestParser:
@@ -29,7 +123,7 @@ class TestParser:
         Class teardown after all tests
         """
         cls.parser = None
-        os.remove("test.txt")
+        os.remove("test_parser.txt")
 
     def setup_method(self) -> None:
         """
@@ -54,8 +148,8 @@ class TestParser:
         """
         Assert the -o, --output switch assigns value to 'output'
         """
-        self.parser = self.parser.parse_args(["-o", "test.txt"])
-        assert self.parser.output == "test.txt"
+        self.parser = self.parser.parse_args(["-o", "test_parser.txt"])
+        assert self.parser.output == "test_parser.txt"
 
     def test_parser_secure_is_collected_correctly(self) -> None:
         """
@@ -118,43 +212,70 @@ class TestParser:
         """
         Asserts non-zero exit code and message if -o is a directory
         """
-        with open("test.txt", "w", encoding="utf-8") as file:
+        with open("test_parser.txt", "w", encoding="utf-8") as file:
             file.write("TESTING")
         args = self.parser.parse_args(
-            ["-d", "test.com", "-o", "test.txt", "-v"])
+            ["-d", "test.com", "-o", "test_parser.txt", "-v"])
         with pytest.raises(SystemExit) as error:
             verify_args(args, self.parser)
         _, msg = capsys.readouterr()
         assert error.value.code != 0 and "[-] Path exists and is not empty" in msg
 
 
-# class TestExecutor:
-#     """
-#     Executor module test class
-#     """
+class TestExecutor:
+    """
+    Executor module test class
+    """
 
-#     @classmethod
-#     def setup_class(cls) -> None:
-#         """
-#         Class setup runs before any tests
-#         """
-#         cls.executor = Executor()
+    @classmethod
+    def setup_class(cls) -> None:
+        """
+        Class setup runs before any tests
+        """
+        cls.single = Executor(SimpleNamespace(**ARGS_SINGLE))
+        cls.single_secure = Executor(SimpleNamespace(**ARGS_SINGLE_SECURE))
+        cls.single_inspect = Executor(SimpleNamespace(**ARGS_SINGLE_INSPECT))
+        cls.single_output = Executor(SimpleNamespace(**ARGS_SINGLE_OUTPUT))
+        cls.single_verbose = Executor(SimpleNamespace(**ARGS_SINGLE_VERBOSE))
+        cls.multi = Executor(SimpleNamespace(**ARGS_MULTI))
+        cls.multi_secure = Executor(SimpleNamespace(**ARGS_MULTI_SECURE))
+        cls.multi_inspect = Executor(SimpleNamespace(**ARGS_MULTI_INSPECT))
+        cls.multi_output = Executor(SimpleNamespace(**ARGS_MULTI_OUTPUT))
+        cls.multi_verbose = Executor(SimpleNamespace(**ARGS_MULTI_VERBOSE))
 
-#     @classmethod
-#     def teardown_class(cls) -> None:
-#         """
-#         Class teardown after all tests
-#         """
-#         cls.executor = None
+    @classmethod
+    def teardown_class(cls) -> None:
+        """
+        Class teardown after all tests
+        """
+        cls.single = None
+        cls.single_secure = None
+        cls.single_inspect = None
+        cls.single_output = None
+        cls.single_verbose = None
+        cls.multi = None
+        cls.multi_secure = None
+        cls.multi_inspect = None
+        cls.multi_output = None
+        cls.multi_verbose = None
 
-#     def setup_method(self) -> None:
-#         """
-#         Method setup called before each test
-#         """
-#         self.executor = Executor()
+    def teardown_method(self) -> None:
+        """
+        Method teardown called after each test
+        """
+        # clean up the output file if it was created during testing
+        try:
+            os.remove("scan.txt")
+        except FileNotFoundError:
+            pass
 
-#     def teardown_method(self) -> None:
-#         """
-#         Method teardown called after each test
-#         """
-#         self.executor = None
+    def test_single_domain_scan_returns_missing_headers(self, capsys) -> None:
+        """
+        Assert test headers are not in missing headers returned
+        """
+        self.single.handle_single()
+        out, _ = capsys.readouterr()
+        assert \
+            "[+] Received response from http://127.0.0.1:5000" in out and \
+            "[-] Response is missing the following security headers:" in out and \
+            "Cross-Origin-Resource-Policy" in out
