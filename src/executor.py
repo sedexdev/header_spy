@@ -2,7 +2,7 @@
 Executor module for core functionality
 """
 
-# pylint: disable=line-too-long, too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes
 
 import argparse
 import sys
