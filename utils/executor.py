@@ -14,8 +14,8 @@ from concurrent.futures import as_completed, ThreadPoolExecutor
 from socket import timeout
 from typing import List
 
-from src.colours import TerminalColours
-from src.output import HeaderSpyIO
+from utils.colours import TerminalColours
+from utils.output import HeaderSpyIO
 
 
 SECURITY_HEADERS = [
@@ -159,7 +159,7 @@ class Executor:
         Args:
             urls (List): list of subdomains
         """
-        missing_headers = set()
+        missing_headers = list()
         with ThreadPoolExecutor(max_workers=self.threads) as e:
             future_to_url = {e.submit(self.make_request, s): s for s in urls}
             for future in as_completed(future_to_url):
@@ -176,7 +176,7 @@ class Executor:
                     self.handle_output(data)
                     # update the missing_headers set
                     for header in headers:
-                        missing_headers.add(header)
+                        missing_headers.append(header)
                 except timeout as e:
                     print(TerminalColours.RED + f"[-] {url}: {e}")
                 except urllib.error.URLError as e:
@@ -204,7 +204,7 @@ class Executor:
             self.handle_header(self.inspect)
         self.handle_output(data)
         self.handle_verbose(data["missing_headers"])
-        print(TerminalColours.GREEN + "\n[+] Scan complete\n")
+        print(TerminalColours.RESET + "\n[+] Scan complete\n")
 
     def handle_multiple(self) -> None:
         """
@@ -219,4 +219,4 @@ class Executor:
         if self.output:
             print(f"[+] Writing results to '{self.output}'...\n")
         self.execute(urls)
-        print(TerminalColours.GREEN + "\n[+] Scan complete\n")
+        print(TerminalColours.RESET + "\n[+] Scan complete\n")

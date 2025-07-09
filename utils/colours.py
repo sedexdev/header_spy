@@ -15,3 +15,4 @@ class TerminalColours:
     PURPLE = '\033[95m'
     YELLOW = '\033[33m'
     BLUE = '\033[96m'
+    RESET = '\033[0m'

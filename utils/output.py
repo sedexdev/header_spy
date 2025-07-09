@@ -6,8 +6,8 @@ Output handling module
 
 import sys
 
-from src.colours import TerminalColours
-from src.secure_headers import (
+from utils.colours import TerminalColours
+from utils.secure_headers import (
     StrictTransportSecurity,
     XFrameOptions,
     XContentTypeOptions,
@@ -209,6 +209,6 @@ class HeaderSpyIO:
             data (dict): scan data
         """
         if data["inspect_header"] in data["missing_headers"]:
-            print(TerminalColours.BLUE + f"[-] {data['url']}")
+            print(TerminalColours.RED + f"[-] {data['url']}")
         else:
             print(TerminalColours.GREEN + f"[+] {data['url']}")

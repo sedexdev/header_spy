@@ -8,8 +8,8 @@ import argparse
 import os
 import urllib.error
 
-from src.colours import TerminalColours
-from src.executor import Executor
+from utils.colours import TerminalColours
+from utils.executor import Executor
 
 
 def create_parser(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:

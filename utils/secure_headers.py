@@ -18,19 +18,19 @@ class SecureHeaderData(ABC):
     """
 
     @abstractmethod
-    def get_description(self):
+    def get_description(self) -> str:
         """
         Method stub for header description
         """
 
     @abstractmethod
-    def get_link(self):
+    def get_link(self) -> str:
         """
         Method stub for header OWASP link
         """
 
     @abstractmethod
-    def get_vulnerabilities(self):
+    def get_vulnerabilities(self) -> defaultdict:
         """
         Method stub for header vulnerability data
         """
