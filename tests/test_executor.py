@@ -1,6 +1,6 @@
 """Tests for executor.py"""
 
-# pylint: disable=redefined-outer-name
+# pylint: disable=line-too-long, redefined-outer-name
 
 import argparse
 
@@ -60,12 +60,12 @@ def test_get_urls(mock_args: Namespace) -> None:
 
 
 @patch('urllib.request.urlopen')
-def test_make_request(mock_urlopen, mock_args: Namespace) -> None:
+def test_make_request(mock_urlopen: MagicMock, mock_args: Namespace) -> None:
     """
     Tests the make_request method
 
     Args:
-        mock_urlopen (Unknown): mock urlopen function 
+        mock_urlopen (MagicMock): mock urlopen 
         mock_args (Namespace): mock Namespace object
     """
     mock_response = MagicMock()
@@ -96,13 +96,13 @@ def test_parse_headers(mock_args: Namespace) -> None:
 
 @patch('utils.executor.Executor.make_request')
 @patch('utils.executor.Executor.handle_output')
-def test_handle_single(mock_handle_output, mock_make_request, mock_args: Namespace) -> None:
+def test_handle_single(mock_handle_output: MagicMock, mock_make_request: MagicMock, mock_args: Namespace) -> None:
     """
     Tests the handle_single method
 
     Args:
-        mock_handle_output (Unknown): mock handle_output function
-        mock_make_request (Unknown): mock make_request function
+        mock_handle_output (MagicMock): mock handle_output
+        mock_make_request (MagicMock): mock make_request
         mock_args (Namespace): mock Namespace object
     """
     mock_response = HTTPMessage()
@@ -118,22 +118,25 @@ def test_handle_single(mock_handle_output, mock_make_request, mock_args: Namespa
 
 @patch('utils.executor.Executor.get_urls')
 @patch('utils.executor.Executor.execute')
-def test_handle_multiple(mock_execute, mock_get_urls, mock_args: Namespace) -> None:
+def test_handle_multiple(mock_execute: MagicMock, mock_get_urls: MagicMock, mock_args: Namespace) -> None:
     """
     Tests the handle_multiple method
 
     Args:
-        mock_execute (Unknown): mock execute function
-        mock_get_urls (Unknown): mock get_urls function
+        mock_execute (MagicMock): mock execute
+        mock_get_urls (MagicMock): mock get_urls
         mock_args (Namespace): mock Namespace object
     """
     mock_args.word_list = 'wordlist.txt'
-    
+
     executor = Executor(mock_args)
-    with patch.object(executor, 'get_urls', return_value=[
-        'http://example.com',
-        'http://sub.example.com'
-    ]) as mock_get_urls:
+    with patch.object(executor,
+                      'get_urls',
+                      return_value=[
+                          'http://example.com',
+                          'http://sub.example.com'
+                      ]
+                      ) as mock_get_urls:
         executor.handle_multiple()
 
     mock_get_urls.assert_called_once()

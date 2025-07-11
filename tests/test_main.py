@@ -4,7 +4,7 @@ Tests for main.py
 
 import argparse
 
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import pytest
 
@@ -34,9 +34,12 @@ def test_verify_args_no_domain() -> None:
 
 
 @patch('argparse.ArgumentParser.parse_args')
-def test_get_args(mock_parse_args) -> None:
+def test_get_args(mock_parse_args: MagicMock) -> None:
     """
     Tests the get_args function
+
+    Args:
+        mock_parse_args (MagicMock): mocked parse_args
     """
     mock_parse_args.return_value = argparse.Namespace(
         domain='example.com',
@@ -53,11 +56,18 @@ def test_get_args(mock_parse_args) -> None:
 
 @patch('main.get_args')
 @patch('main.Executor')
-def test_main_single(mock_executor, mock_get_args) -> None:
+def test_main_single(mock_executor: MagicMock, mock_get_args: MagicMock) -> None:
     """
     Tests the main function for a single domain scan
+
+    Args:
+        mock_executor (MagicMock): mocked executor
+        mock_get_args (MagicMock): mocked get_args
     """
-    mock_get_args.return_value = argparse.Namespace(word_list=None, domain='example.com')
+    mock_get_args.return_value = argparse.Namespace(
+        word_list=None,
+        domain='example.com'
+    )
     mock_executor.return_value.word_list = None
     main()
     mock_executor.return_value.handle_single.assert_called_once()
@@ -65,11 +75,18 @@ def test_main_single(mock_executor, mock_get_args) -> None:
 
 @patch('main.get_args')
 @patch('main.Executor')
-def test_main_multiple(mock_executor, mock_get_args) -> None:
+def test_main_multiple(mock_executor: MagicMock, mock_get_args: MagicMock) -> None:
     """
     Tests the main function for a multiple domain scan
+
+    Args:
+        mock_executor (MagicMock): mocked executor
+        mock_get_args (MagicMock): mocked get_args
     """
-    mock_get_args.return_value = argparse.Namespace(word_list='some_list.txt', domain='example.com')
+    mock_get_args.return_value = argparse.Namespace(
+        word_list='some_list.txt',
+        domain='example.com'
+    )
     mock_executor.return_value.word_list = 'some_list.txt'
     main()
     mock_executor.return_value.handle_multiple.assert_called_once()
