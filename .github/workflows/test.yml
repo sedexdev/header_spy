@@ -25,5 +25,8 @@ jobs:
                   python-version: "3.12"
             - name: Install dependencies
               run: pip install -r requirements.txt
+            - name: Update Path
+              run: |
+                  export PYTHONPATH=$PYTHONPATH:$(pwd)
             - name: Test code
               run: pytest tests/
