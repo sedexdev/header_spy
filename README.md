@@ -9,8 +9,6 @@ The tool is based on the [OWASP Secure Headers Project](https://owasp.org/www-pr
 project **"describes HTTP response headers that your application can use to increase the security of your application"**.
 The tool can inspect a single domain, or it can enumerate a large amount of possible subdomains of a given domain.
 
----
-
 # 📦 Installation
 
 ## Prerequisites
@@ -26,8 +24,6 @@ git clone https://github.com/sedexdev/header_spy.git
 cd header_spy
 python3 main.py [OPTIONS]
 ```
-
----
 
 # ⚙️ Usage
 
@@ -58,8 +54,6 @@ python main.py [-h] -d [domain.name] [-s] [-i] [header_name] [-w] [word_list_pat
 -   Sending the results of a single header search to a file writes only those domains that **don't have the given header**.
 -   No verbose content is displayed when searching for a single header using the `-i` switch
 
----
-
 # 📂 Project Structure
 
 ```
@@ -75,8 +69,6 @@ header_spy/
 └── requirements.py   # Dependencies
 ```
 
----
-
 # 🧪 Running Tests
 
 ```bash
@@ -88,25 +80,17 @@ pip3 install -r requirements.txt
 pytest tests/
 ```
 
----
-
 # 🐛 Reporting Issues
 
 Found a bug or need a feature? Open an issue [here](https://github.com/sedexdev/header_spy/issues).
-
----
 
 # 🧑‍💻 Authors
 
 **Andrew Macmillan** – [@sedexdev](https://github.com/sedexdev)
 
----
-
 # 📜 License
 
 This project is licensed under the MIT License - see the [M.I.T](https://github.com/sedexdev/header_spy/blob/main/LICENSE) file for details.
-
----
 
 # 📣 Acknowledgements
 
