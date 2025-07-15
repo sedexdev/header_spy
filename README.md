@@ -21,14 +21,13 @@ Python >= 3.12
 
 ```bash
 git clone https://github.com/sedexdev/header_spy.git
-cd header_spy
-python3 main.py [OPTIONS]
 ```
 
 # ⚙️ Usage
 
 ```bash
-python main.py [-h] -d [domain.name] [-s] [-i] [header_name] [-w] [word_list_path] [-t] [num_threads] [-o] [file_path] [-v]
+cd header_spy
+python3 main.py [-h] -d [domain.name] [-s] [-i] [header_name] [-w] [word_list_path] [-t] [num_threads] [-o] [file_path] [-v]
 ```
 
 `-d, --domain`: Domain to inspect - sends HTTP GET request (**required**) \
